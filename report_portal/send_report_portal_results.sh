@@ -342,8 +342,6 @@ send_results() {
         log_info "  Metadata file: ${metadata_file}"
         log_info "  Test results: ${test_file_path}"
         log_info "  Data Router URL: ${DATA_ROUTER_URL}"
-        log_info "  Username: [REDACTED]"
-        log_info "  Password: [REDACTED]"
         rm -f "${metadata_file}"
         return 0
     fi

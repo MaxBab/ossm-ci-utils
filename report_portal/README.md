@@ -77,7 +77,7 @@ export REPORT_PORTAL_PROJECT="my_project"
 | `PRODUCT_VERSION` | `"unknown"` | Version of the product being tested |
 | `TEST_SUITE` | `"automated-tests"` | Name of the test suite |
 | `TEST_REPO` | Current git repo or `"unknown"` | Repository being tested |
-| `INSTALLATION_METHOD` | `"unknown"` | Method used for installation |
+| `INSTALLATION_METHOD` | `"unknown"` | Method used for installation or deploy for OSSM. For example: sail-operator, OSSM OLM, Kiali, Istio upstream, Istio converter |
 | `TEST_STAGE` | `"ci"` | Testing stage (e.g., ci, staging, production) |
 | `DATA_ROUTER_URL` | `"https://datarouter.ccitredhat.com"` | Data Router URL |
 | `DATA_ROUTER_USERNAME` | `""` | Data Router username (alternative to file-based credentials) |
