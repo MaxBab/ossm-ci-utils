@@ -1,71 +1,6 @@
 #!/bin/bash
 
-# ==============================================================================
-# Generic Report Portal Results Sender via Data Router
-#
-# This script sends test results from JUnit XML files to any Report Portal
-# instance using the Data Router service. It can be used across different
-# repositories and CI environments.
-#
-# More information about Report Portal: https://reportportal.io/
-# More information about Data Router: https://datarouter.ccitredhat.com
-#
-# Prerequisites:
-# - jq must be installed and available in the PATH
-# - droute command must be available in the PATH
-#
-# SECURITY NOTE:
-# Credentials are handled via environment variables or files. While environment
-# variables are more secure, please note that droute command line arguments may
-# be visible in process lists. Use appropriate security measures in your environment.
-#
-# Required credentials (choose one method):
-# Method 1: Environment variables (RECOMMENDED)
-#   - DATA_ROUTER_USERNAME: Data Router username
-#   - DATA_ROUTER_PASSWORD: Data Router password/token
-# Method 2: Files (fallback)
-#   - /creds-data-router/username: Data Router username
-#   - /creds-data-router/token: Data Router password/token
-#
-# Required Environment Variables:
-# - REPORT_PORTAL_HOSTNAME: Report Portal hostname (e.g., "reportportal.example.com")
-# - REPORT_PORTAL_PROJECT: Report Portal project name
-#
-# Optional Environment Variables (with defaults):
-# - TESTRUN_NAME: Name of the test run (default: "Test Run")
-# - TESTRUN_DESCRIPTION: Description of the test run (default: "Automated test run")
-# - ARTIFACT_DIR: Directory containing test artifacts (default: "/tmp/artifacts")
-# - TEST_FILE_NAME: Name of the JUnit XML test result file (default: "junit.xml")
-# - PRODUCT_VERSION: Version of the product being tested (default: "unknown")
-# - TEST_SUITE: Name of the test suite (default: "automated-tests")
-# - TEST_REPO: Repository being tested (default: current git repo or "unknown")
-# - INSTALLATION_METHOD: Method used for installation (default: "unknown")
-# - TEST_STAGE: Testing stage (default: "ci")
-# - EXTRA_ATTRIBUTES: JSON array of additional key/value pairs for metadata
-# - DATA_ROUTER_URL: Data Router URL (default: "https://datarouter.ccitredhat.com")
-#
-# Usage:
-#   ./send_report_portal_results.sh [OPTIONS]
-#
-# Options:
-#   -h, --help          Show this help message
-#   -v, --verbose       Enable verbose output
-#   --dry-run          Show what would be sent without actually sending
-#
-# Examples:
-#   # Basic usage with required environment variables
-#   export REPORT_PORTAL_HOSTNAME="reportportal.example.com"
-#   export REPORT_PORTAL_PROJECT="my_project"
-#   ./send_report_portal_results.sh
-#
-#   # With custom test file and description
-#   export REPORT_PORTAL_HOSTNAME="reportportal.example.com"
-#   export REPORT_PORTAL_PROJECT="my_project"
-#   export TEST_FILE_NAME="integration-tests.xml"
-#   export TESTRUN_DESCRIPTION="Integration test suite for feature X"
-#   ./send_report_portal_results.sh
-#
-# ==============================================================================
+# For more information please check the README.md file in the same directory.
 
 set -o nounset
 set -o errexit
@@ -241,7 +176,7 @@ set_defaults() {
 
 create_metadata_file() {
     local metadata_file="metadata.json"
-    local starttime=$(date +%s)000
+    local starttime=$(date +%s)
 
     log_verbose "Creating metadata file: ${metadata_file}"
 
@@ -295,13 +230,6 @@ EOF
     # Check if there are any extra attributes to add
     if [[ -n "${EXTRA_ATTRIBUTES}" ]]; then
         log_verbose "Adding extra attributes to metadata"
-
-        # Validate that jq is available
-        if ! command -v jq &> /dev/null; then
-            log_error "jq is required to merge extra attributes. Please install jq."
-            rm -f "${metadata_file}"
-            exit 1
-        fi
 
         local temp_file="metadata_tmp.json"
         if ! jq --argjson extra "${EXTRA_ATTRIBUTES}" '.targets.reportportal.processing.launch.attributes += $extra' "${metadata_file}" > "${temp_file}"; then
