@@ -364,6 +364,7 @@ send_results() {
         --username "${DATA_ROUTER_USERNAME}" \
         --password "${DATA_ROUTER_PASSWORD}" \
         --url "${DATA_ROUTER_URL}" \
+        --wait=1 \
         ${VERBOSE:+--verbose}; then
         log_error "Failed to send results to Data Router"
         rm -f "${metadata_file}"
