@@ -39,7 +39,7 @@ REQUIRED ENVIRONMENT VARIABLES:
 OPTIONAL ENVIRONMENT VARIABLES:
     TESTRUN_NAME             Name of the test run (default: "Test Run")
     TESTRUN_DESCRIPTION      Description of the test run (default: "Automated test run")
-    ARTIFACT_DIR             Directory containing test artifacts (default: "/tmp/artifacts")
+    TEST_RESULTS_DIR         Directory containing test result files (default: "/tmp/artifacts")
     TEST_FILE_NAME           Name of the JUnit XML test result file (default: "junit.xml")
     PRODUCT_VERSION          Version of the product being tested (default: "unknown")
     TEST_SUITE               Name of the test suite (default: "automated-tests")
@@ -152,7 +152,7 @@ set_defaults() {
     readonly DATA_ROUTER_URL=${DATA_ROUTER_URL:-"https://datarouter.ccitredhat.com"}
     readonly TESTRUN_NAME=${TESTRUN_NAME:-"Test Run"}
     readonly TESTRUN_DESCRIPTION=${TESTRUN_DESCRIPTION:-"Automated test run"}
-    readonly ARTIFACT_DIR=${ARTIFACT_DIR:-"/tmp/artifacts"}
+    readonly TEST_RESULTS_DIR=${TEST_RESULTS_DIR:-"/tmp/artifacts"}
     readonly TEST_FILE_NAME=${TEST_FILE_NAME:-"junit.xml"}
     readonly PRODUCT_VERSION=${PRODUCT_VERSION:-"unknown"}
     readonly TEST_SUITE=${TEST_SUITE:-"automated-tests"}
@@ -165,7 +165,7 @@ set_defaults() {
     log_verbose "  Report Portal: ${REPORT_PORTAL_HOSTNAME}/${REPORT_PORTAL_PROJECT}"
     log_verbose "  Data Router URL: ${DATA_ROUTER_URL}"
     log_verbose "  Test Run: ${TESTRUN_NAME}"
-    log_verbose "  Test File: ${ARTIFACT_DIR}/${TEST_FILE_NAME}"
+    log_verbose "  Test File: ${TEST_RESULTS_DIR}/${TEST_FILE_NAME}"
     log_verbose "  Product Version: ${PRODUCT_VERSION}"
     log_verbose "  Test Suite: ${TEST_SUITE}"
     log_verbose "  Test Repository: ${TEST_REPO}"
@@ -250,21 +250,21 @@ EOF
 }
 
 verify_test_file() {
-    local test_file_path="${ARTIFACT_DIR}/${TEST_FILE_NAME}"
+    local test_file_path="${TEST_RESULTS_DIR}/${TEST_FILE_NAME}"
 
     log_verbose "Verifying test results file: ${test_file_path}"
 
-    # Check if artifact directory exists
-    if [[ ! -d "${ARTIFACT_DIR}" ]]; then
-        log_error "Artifact directory '${ARTIFACT_DIR}' does not exist."
+    # Check if test results directory exists
+    if [[ ! -d "${TEST_RESULTS_DIR}" ]]; then
+        log_error "Test results directory '${TEST_RESULTS_DIR}' does not exist."
         exit 1
     fi
 
     # Verify test results file exists and is readable
     if [[ ! -f "${test_file_path}" ]]; then
         log_error "Test results file '${test_file_path}' not found."
-        log_info "Available files in ${ARTIFACT_DIR}:"
-        ls -la "${ARTIFACT_DIR}" 2>/dev/null || log_error "Could not list artifact directory contents"
+        log_info "Available files in ${TEST_RESULTS_DIR}:"
+        ls -la "${TEST_RESULTS_DIR}" 2>/dev/null || log_error "Could not list test results directory contents"
         exit 1
     fi
 
@@ -326,7 +326,7 @@ verify_credentials() {
 
 send_results() {
     local metadata_file="metadata.json"
-    local test_file_path="${ARTIFACT_DIR}/${TEST_FILE_NAME}"
+    local test_file_path="${TEST_RESULTS_DIR}/${TEST_FILE_NAME}"
 
     log_info "Preparing to send test results from '${test_file_path}'"
 
