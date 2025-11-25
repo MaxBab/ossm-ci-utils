@@ -72,7 +72,7 @@ export REPORT_PORTAL_PROJECT="my_project"
 |----------|---------|-------------|
 | `TESTRUN_NAME` | `"Test Run"` | Name of the test run |
 | `TESTRUN_DESCRIPTION` | `"Automated test run"` | Description of the test run |
-| `ARTIFACT_DIR` | `"/tmp/artifacts"` | Directory containing test artifacts |
+| `TEST_RESULTS_DIR` | `"/tmp/artifacts"` | Directory containing test result files |
 | `TEST_FILE_NAME` | `"junit.xml"` | Name of the JUnit XML test result file |
 | `PRODUCT_VERSION` | `"unknown"` | Version of the product being tested |
 | `TEST_SUITE` | `"automated-tests"` | Name of the test suite |
@@ -193,7 +193,7 @@ report_to_portal:
 # For local testing with custom test results and environment variable credentials
 export REPORT_PORTAL_HOSTNAME="reportportal.example.com"
 export REPORT_PORTAL_PROJECT="my_project"
-export ARTIFACT_DIR="./test-results"
+export TEST_RESULTS_DIR="./test-results"
 export TEST_FILE_NAME="my-tests.xml"
 export TESTRUN_NAME="Local Development Test"
 export PRODUCT_VERSION="dev"
