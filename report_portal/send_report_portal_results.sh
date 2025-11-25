@@ -175,7 +175,7 @@ set_defaults() {
 # --- Core Functions ---
 
 create_metadata_file() {
-    local metadata_file="metadata.json"
+    local metadata_file="/tmp/metadata.json"
     local starttime=$(date +%s)
 
     log_verbose "Creating metadata file: ${metadata_file}"
@@ -231,7 +231,7 @@ EOF
     if [[ -n "${EXTRA_ATTRIBUTES}" ]]; then
         log_verbose "Adding extra attributes to metadata"
 
-        local temp_file="metadata_tmp.json"
+        local temp_file="/tmp/metadata_tmp.json"
         if ! jq --argjson extra "${EXTRA_ATTRIBUTES}" '.targets.reportportal.processing.launch.attributes += $extra' "${metadata_file}" > "${temp_file}"; then
             log_error "Failed to merge extra attributes. Please check EXTRA_ATTRIBUTES format."
             log_error "Expected format: '[{\"key\": \"k1\", \"value\": \"v1\"}, {\"key\": \"k2\", \"value\": \"v2\"}]'"
