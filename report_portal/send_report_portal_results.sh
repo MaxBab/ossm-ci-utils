@@ -10,6 +10,10 @@ set -o pipefail
 VERBOSE=false
 DRY_RUN=false
 
+# Path to the metadata file used for Data Router submission
+# Stored in /tmp to ensure writability in containerized environments
+METADATA_FILE="/tmp/metadata.json"
+
 # Security function to clear sensitive variables
 cleanup_credentials() {
     unset DATA_ROUTER_USERNAME DATA_ROUTER_PASSWORD 2>/dev/null || true
@@ -175,12 +179,11 @@ set_defaults() {
 # --- Core Functions ---
 
 create_metadata_file() {
-    local metadata_file="/tmp/metadata.json"
     local starttime=$(date +%s)
 
-    log_verbose "Creating metadata file: ${metadata_file}"
+    log_verbose "Creating metadata file: ${METADATA_FILE}"
 
-    cat << EOF > "${metadata_file}"
+    cat << EOF > "${METADATA_FILE}"
 {
     "targets": {
         "reportportal": {
@@ -232,18 +235,18 @@ EOF
         log_verbose "Adding extra attributes to metadata"
 
         local temp_file="/tmp/metadata_tmp.json"
-        if ! jq --argjson extra "${EXTRA_ATTRIBUTES}" '.targets.reportportal.processing.launch.attributes += $extra' "${metadata_file}" > "${temp_file}"; then
+        if ! jq --argjson extra "${EXTRA_ATTRIBUTES}" '.targets.reportportal.processing.launch.attributes += $extra' "${METADATA_FILE}" > "${temp_file}"; then
             log_error "Failed to merge extra attributes. Please check EXTRA_ATTRIBUTES format."
             log_error "Expected format: '[{\"key\": \"k1\", \"value\": \"v1\"}, {\"key\": \"k2\", \"value\": \"v2\"}]'"
-            rm -f "${temp_file}" "${metadata_file}"
+            rm -f "${temp_file}" "${METADATA_FILE}"
             exit 1
         fi
-        mv "${temp_file}" "${metadata_file}"
+        mv "${temp_file}" "${METADATA_FILE}"
     fi
 
     if [[ "${DRY_RUN}" == "true" ]]; then
         log_info "DRY RUN: Metadata file content:"
-        cat "${metadata_file}"
+        cat "${METADATA_FILE}"
     else
         log_verbose "Metadata file created successfully"
     fi
@@ -325,7 +328,6 @@ verify_credentials() {
 }
 
 send_results() {
-    local metadata_file="metadata.json"
     local test_file_path="${TEST_RESULTS_DIR}/${TEST_FILE_NAME}"
 
     log_info "Preparing to send test results from '${test_file_path}'"
@@ -339,27 +341,27 @@ send_results() {
 
     if [[ "${DRY_RUN}" == "true" ]]; then
         log_info "DRY RUN: Would send the following:"
-        log_info "  Metadata file: ${metadata_file}"
+        log_info "  Metadata file: ${METADATA_FILE}"
         log_info "  Test results: ${test_file_path}"
         log_info "  Data Router URL: ${DATA_ROUTER_URL}"
-        rm -f "${metadata_file}"
+        rm -f "${METADATA_FILE}"
         return 0
     fi
 
     # Check if droute command is available
     if ! command -v droute &> /dev/null; then
         log_error "droute command not found. Please ensure it's installed and available in PATH."
-        rm -f "${metadata_file}"
+        rm -f "${METADATA_FILE}"
         exit 1
     fi
 
     log_info "Sending test results to Report Portal via Data Router..."
-    log_verbose "Command: droute send --metadata ${metadata_file} --results ${test_file_path} --url ${DATA_ROUTER_URL} [credentials passed via environment]"
+    log_verbose "Command: droute send --metadata ${METADATA_FILE} --results ${test_file_path} --url ${DATA_ROUTER_URL} [credentials passed via environment]"
 
     # Credentials are already exported as environment variables, which is secure
     # droute will read DATA_ROUTER_USERNAME and DATA_ROUTER_PASSWORD from the environment
     if ! droute send \
-        --metadata "${metadata_file}" \
+        --metadata "${METADATA_FILE}" \
         --results "${test_file_path}" \
         --username "${DATA_ROUTER_USERNAME}" \
         --password "${DATA_ROUTER_PASSWORD}" \
@@ -367,13 +369,13 @@ send_results() {
         --wait=1 \
         ${VERBOSE:+--verbose}; then
         log_error "Failed to send results to Data Router"
-        rm -f "${metadata_file}"
+        rm -f "${METADATA_FILE}"
         exit 1
     fi
 
     log_info "Results sent successfully to Report Portal"
     log_info "Cleaning up metadata file..."
-    rm -f "${metadata_file}"
+    rm -f "${METADATA_FILE}"
 
     # Security: Clear credentials from environment after use
     cleanup_credentials
