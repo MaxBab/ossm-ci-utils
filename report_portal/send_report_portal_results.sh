@@ -49,7 +49,7 @@ OPTIONAL ENVIRONMENT VARIABLES:
     TEST_SUITE               Name of the test suite (default: "automated-tests")
     TEST_REPO                Repository being tested (default: current git repo or "unknown")
     INSTALLATION_METHOD      Method used for installation (default: "unknown")
-    TEST_STAGE               Testing stage (default: "ci")
+    PRODUCT_STAGE            Product stage (default: "upstream")
     EXTRA_ATTRIBUTES         JSON array of additional key/value pairs for metadata
     DATA_ROUTER_URL          Data Router URL (default: "https://datarouter.ccitredhat.com")
     DATA_ROUTER_USERNAME     Data Router username (alternative to /creds-data-router/username file)
@@ -162,7 +162,7 @@ set_defaults() {
     readonly TEST_SUITE=${TEST_SUITE:-"automated-tests"}
     readonly TEST_REPO=${TEST_REPO:-$(detect_git_repo)}
     readonly INSTALLATION_METHOD=${INSTALLATION_METHOD:-"unknown"}
-    readonly TEST_STAGE=${TEST_STAGE:-"ci"}
+    readonly PRODUCT_STAGE=${PRODUCT_STAGE:-"upstream"}
     readonly EXTRA_ATTRIBUTES=${EXTRA_ATTRIBUTES:-""}
 
     log_verbose "Configuration loaded:"
@@ -173,7 +173,7 @@ set_defaults() {
     log_verbose "  Product Version: ${PRODUCT_VERSION}"
     log_verbose "  Test Suite: ${TEST_SUITE}"
     log_verbose "  Test Repository: ${TEST_REPO}"
-    log_verbose "  Test Stage: ${TEST_STAGE}"
+    log_verbose "  Product Stage: ${PRODUCT_STAGE}"
 }
 
 # --- Core Functions ---
@@ -207,8 +207,8 @@ create_metadata_file() {
                             "value": "${PRODUCT_VERSION}"
                         },
                         {
-                            "key": "test_stage",
-                            "value": "${TEST_STAGE}"
+                            "key": "product_stage",
+                            "value": "${PRODUCT_STAGE}"
                         },
                         {
                             "key": "test_suite",
