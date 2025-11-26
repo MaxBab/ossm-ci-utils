@@ -360,15 +360,38 @@ send_results() {
 
     # Credentials are already exported as environment variables, which is secure
     # droute will read DATA_ROUTER_USERNAME and DATA_ROUTER_PASSWORD from the environment
-    if ! droute send \
-        --metadata "${METADATA_FILE}" \
-        --results "${test_file_path}" \
-        --username "${DATA_ROUTER_USERNAME}" \
-        --password "${DATA_ROUTER_PASSWORD}" \
-        --url "${DATA_ROUTER_URL}" \
-        --wait=1 \
-        ${VERBOSE:+--verbose}; then
-        log_error "Failed to send results to Data Router"
+    local max_retries=10
+    local retry_delay=1
+    local attempt=1
+    local success=false
+
+    while [[ ${attempt} -le ${max_retries} ]]; do
+        if [[ ${attempt} -gt 1 ]]; then
+            log_info "Retry attempt ${attempt}/${max_retries}..."
+        fi
+
+        if droute send \
+            --metadata "${METADATA_FILE}" \
+            --results "${test_file_path}" \
+            --username "${DATA_ROUTER_USERNAME}" \
+            --password "${DATA_ROUTER_PASSWORD}" \
+            --url "${DATA_ROUTER_URL}" \
+            --wait=1 \
+            ${VERBOSE:+--verbose}; then
+            success=true
+            break
+        fi
+
+        if [[ ${attempt} -lt ${max_retries} ]]; then
+            log_verbose "Attempt ${attempt} failed, waiting ${retry_delay} second(s) before retry..."
+            sleep ${retry_delay}
+        fi
+
+        ((attempt++))
+    done
+
+    if [[ "${success}" != "true" ]]; then
+        log_error "Failed to send results to Data Router after ${max_retries} attempts"
         rm -f "${METADATA_FILE}"
         exit 1
     fi
