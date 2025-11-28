@@ -244,11 +244,10 @@ EOF
         mv "${temp_file}" "${METADATA_FILE}"
     fi
 
-    if [[ "${DRY_RUN}" == "true" ]]; then
-        log_info "DRY RUN: Metadata file content:"
-        cat "${METADATA_FILE}"
-    else
+    if [[ "${VERBOSE}" == "true" ]]; then
         log_verbose "Metadata file created successfully"
+        log_verbose "Metadata file content:"
+        cat "${METADATA_FILE}"
     fi
 }
 
