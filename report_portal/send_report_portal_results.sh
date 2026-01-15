@@ -375,7 +375,7 @@ send_results() {
             --username "${DATA_ROUTER_USERNAME}" \
             --password "${DATA_ROUTER_PASSWORD}" \
             --url "${DATA_ROUTER_URL}" \
-            --wait=10 \
+            --wait=30 \
             ${VERBOSE:+--verbose}; then
             success=true
             break
