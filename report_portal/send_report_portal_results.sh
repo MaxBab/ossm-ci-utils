@@ -193,6 +193,7 @@ create_metadata_file() {
             },
             "processing": {
                 "apply_tfa": false,
+                "disable_testitem_updater": true,
                 "launch": {
                     "name": "${TESTRUN_NAME}",
                     "description": "${TESTRUN_DESCRIPTION}",
