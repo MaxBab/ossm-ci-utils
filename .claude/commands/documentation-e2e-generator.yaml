@@ -1,0 +1,139 @@
+# Documentation to E2E Test Generator Configuration
+# Place this file in your project directory
+
+# Basic Configuration
+documentation_path: "docs/"                     # Folder path relative to project root
+output_path: "tests/e2e/"                       # Where to generate test files
+project_name: "my-project"                      # Used for test package naming
+
+# File Filtering
+exclude_patterns:                               # Files/folders to exclude from analysis
+  - "*.draft.md"                                # Draft documentation files
+  - "*.template.md"                             # Template files
+  - "internal/*"                                # Internal documentation
+  - "README.md"                                 # General project README
+  - ".git/*"                                    # Git-specific files
+  - "node_modules/*"                            # Dependencies (if mixed project)
+
+include_patterns:                               # Specific patterns to include (optional)
+  - "installation/*.md"                         # Installation guides
+  - "api/*.md"                                  # API documentation
+  - "configuration/*.adoc"                      # Configuration guides
+  - "troubleshooting/*.md"                      # Troubleshooting guides
+
+# Test Generation Configuration
+test_config:
+  setup_required: true                          # Generate setup/teardown procedures
+  cleanup_required: true                        # Generate cleanup procedures automatically if not specified
+  split_by_tags: true                           # Split tests by document tags
+  parallel_execution: false                     # Structure tests for parallel execution
+  framework: "ginkgo"                           # Testing framework (ginkgo, testify, standard)
+
+# Tag Configuration for Test Boundaries
+test_boundaries:
+  enabled: true                                 # Enable tag-based test extraction
+  start_tag: "<!-- TEST-START -->"              # Start of test section
+  end_tag: "<!-- TEST-END -->"                  # End of test section
+  section_tag: "<!-- TEST-SECTION: {name} -->"  # Named test sections
+  ignore_tag: "<!-- TEST-IGNORE -->"            # Skip this content for tests
+
+# Quality and Validation Settings
+quality_settings:
+  threshold: 7                                  # Minimum quality score (1-10)
+  validation_level: "strict"                    # strict, moderate, relaxed
+  require_examples: true                        # Enforce example requirements
+  require_error_scenarios: true                 # Enforce error scenario documentation
+  require_timeouts: true                        # Enforce timeout specifications
+
+# Retry and Operational Configuration
+retry_config:
+  enabled: true                                 # Enable retry logic generation
+  max_retries: 5                                # Default maximum retry attempts
+  backoff_strategy: "exponential"               # exponential, linear, fixed
+  initial_delay: "5s"                           # Initial delay between retries
+
+# Timeout Configuration
+timeout_config:
+  default_timeout: "300s"                       # Default timeout for operations
+  installation_timeout: "600s"                  # Timeout for installation procedures
+  pod_ready_timeout: "120s"                     # Timeout for pod readiness
+  service_ready_timeout: "60s"                  # Timeout for service availability
+  cleanup_timeout: "180s"                       # Timeout for cleanup operations
+
+# Environment and Authentication
+environment:
+  cluster_type: "kubernetes"                    # kubernetes, openshift, docker
+  auth_method: "kubeconfig"                     # kubeconfig, token, certificate
+
+# Test Organization
+test_organization:
+  group_by_feature: true                        # Group tests by feature/component
+  separate_error_tests: false                   # Create separate error scenario files
+  create_helpers: true                          # Generate helper utility functions
+  create_fixtures: true                         # Generate test data fixtures
+
+# Custom Tags and Patterns (Advanced)
+custom_patterns:
+  # Add custom Labels for test categorization.
+  labels:
+    performance: true                          # Label tests related to performance
+    security: true                             # Label tests related to security
+    integration: true                          # Label tests related to integration
+    default: documentation                     # Default label for all the tests.
+
+  # Custom validation patterns. 
+  # This will ensure that the generator can detect and validate 
+  # specific patterns in the documentation, such as kubectl commands, API calls, or file operations.
+  validation_patterns:
+    kubectl_commands: true                      # Detect and validate kubectl commands
+    api_calls: true                             # Detect and validate API calls
+    file_operations: true                       # Detect and validate file operations
+
+# Output Customization
+output_settings:
+  preserve_existing: false                      # Preserve existing test files
+  backup_existing: true                         # Backup existing tests before regeneration
+  generate_documentation: true                  # Generate README for test suite
+  include_examples: false                        # Include usage examples in documentation
+
+# Debug and Development
+debug:
+  verbose_output: false                         # Enable verbose output during generation
+  save_intermediate_files: false                # Save intermediate processing files
+  validate_generated_code: true                 # Validate Go syntax of generated tests
+  dry_run: false                                # Show what would be generated without creating files
+
+# Examples of Hidden Tags for Documentation Authors
+#
+# Use these tags in your documentation to enhance test generation:
+#
+# Basic test boundaries:
+# <!-- TEST-START -->
+# ... testable content ...
+# <!-- TEST-END -->
+#
+# Operational specifications:
+# <!-- TEST-TIMEOUT: 300s -->
+# <!-- TEST-RETRY: max=5, backoff=exponential, delay=10s -->
+# <!-- TEST-PARALLEL: false -->
+#
+# Environment requirements:
+# <!-- TEST-SETUP: kubernetes-cluster -->
+# <!-- TEST-CLEANUP: delete-resources -->
+# <!-- TEST-AUTH: type=bearer, token=env:API_TOKEN -->
+#
+# Validation specifications:
+# <!-- TEST-VALIDATION: command="kubectl get pods", expected="Running" -->
+# <!-- TEST-VALIDATION: api="GET /health", status=200 -->
+#
+# Test categorization:
+# <!-- TEST-SECTION: installation -->
+# <!-- TEST-SECTION: configuration -->
+# <!-- TEST-PERFORMANCE -->
+# <!-- TEST-SECURITY -->
+# <!-- TEST-INTEGRATION -->
+#
+# Skip content from test generation:
+# <!-- TEST-IGNORE -->
+# This content will not be included in generated tests
+# <!-- TEST-END -->
