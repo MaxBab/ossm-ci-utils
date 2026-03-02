@@ -1,0 +1,103 @@
+# Test Configuration - Smoke Test Suite
+# This file centralizes test run configuration for all runners (midstream, jenkins, etc.)
+# The data are used to run Istio Integration tests, to fill the command:
+# integ-suite-ocp.sh ${test_suite} ${skip_tests} ${skip_subsuites} ${run_tests_only}
+
+# SMOKE tests comments:
+# Explicit skip_subsuites for smoke tests is because even if the specific test is not in the subsuite, the test framework still sets up and cleans up env for that subsuite which takes time which we can save.
+
+test_suites:
+  pilot:
+    skip_tests: []
+    skip_subsuites:
+      - name: "analysis"
+        skip_in: ['downstream','midstream']
+      - name: "cni"
+        skip_in: ['downstream','midstream']
+      - name: "gatewayinstance"
+        skip_in: ['downstream','midstream']
+      - name: "gie"
+        skip_in: ['downstream','midstream']
+      - name: "localwatcher"
+        skip_in: ['downstream','midstream']
+      - name: "mcs/autoexport"
+        skip_in: ['downstream','midstream']
+      - name: "mcs/discoverability"
+        skip_in: ['downstream','midstream']
+      - name: "multiplecontrolplanes"
+        skip_in: ['downstream','midstream']
+      - name: "proxyconfig"
+        skip_in: ['downstream','midstream']
+      - name: "revisions"
+        skip_in: ['downstream','midstream']
+    run_tests_only:
+      - name: "TestTraffic"
+        skip_in: ['downstream','midstream']
+  security:
+    skip_tests: []
+    skip_subsuites:
+      - name: "ca_custom_root"
+        skip_in: ['downstream','midstream']
+      - name: "cacert_rotation"
+        skip_in: ['downstream','midstream']
+      - name: "file_mounted_certs"
+        skip_in: ['downstream','midstream']
+      - name: "filebased_tls_origination"
+        skip_in: ['downstream','midstream']
+      - name: "https_jwt"
+        skip_in: ['downstream','midstream']
+      - name: "policy_attachment_only"
+        skip_in: ['downstream','midstream']
+      - name: "remote_jwks"
+        skip_in: ['downstream','midstream']
+      - name: "quic"
+        skip_in: ['downstream','midstream']
+      - name: "crl"
+        skip_in: ['downstream','midstream']
+    run_tests_only:
+      - name: "TestStrictMTLS"
+        skip_in: ['downstream','midstream']
+      - name: "TestReachability"
+        skip_in: ['downstream','midstream']
+      - name: "TestTlsGateways"
+        skip_in: ['downstream','midstream']
+      - name: "TestMtlsGateways"
+        skip_in: ['downstream','midstream']
+      - name: "TestAuthz_JWT"
+        skip_in: ['downstream','midstream']
+  ambient:
+    skip_tests: []
+    skip_subsuites:
+      - name: "cni"
+        skip_in: ['downstream','midstream']
+      - name: "waypoint"
+        skip_in: ['downstream','midstream']
+      - name: "cnirepair"
+        skip_in: ['downstream','midstream']
+      - name: "cniupgrade"
+        skip_in: ['downstream','midstream']
+      - name: "untaint"
+        skip_in: ['downstream','midstream']
+    run_tests_only:
+      - name: "TestTraffic"
+        skip_in: ['downstream','midstream']
+      - name: "TestServices"
+        skip_in: ['downstream','midstream']
+      - name: "TestAuthorizationL4"
+        skip_in: ['downstream','midstream']
+      - name: "TestAuthorizationL7"
+        skip_in: ['downstream','midstream']
+  telemetry:
+    skip_tests: []
+    skip_subsuites:
+      - name: "tracing/otelcollector"
+        skip_in: ['downstream','midstream']
+      - name: "tracing/zipkin|policy"
+        skip_in: ['downstream','midstream']
+    run_tests_only:
+      - name: "TestAccessLogs"
+        skip_in: ['downstream','midstream']
+      - name: "TestDashboard"
+        skip_in: ['downstream','midstream']
+      - name: "TestGRPCCountMetrics"
+        skip_in: ['downstream','midstream']
