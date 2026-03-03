@@ -126,10 +126,11 @@ if [ -n "$BRANCH" ]; then
     # Skip the normal extraction since we already have the values
     SKIP_EXTRACTION=true
 else
-    # Without branch filtering - only filter by stream
-    FILTER_SKIP_TESTS=".test_suites.$SKIP_PARSER_SUITE.skip_tests[] | select(.skip_in[] == \"$STREAM\") | .name"
-    FILTER_SKIP_SUBSUITES=".test_suites.$SKIP_PARSER_SUITE.skip_subsuites[] | select(.skip_in[] == \"$STREAM\") | .name"
-    FILTER_RUN_TESTS_ONLY=".test_suites.$SKIP_PARSER_SUITE.run_tests_only[] | select(.skip_in[] == \"$STREAM\") | .name"
+    # Without branch filtering - only filter by stream and exclude items with skip_branches_only
+    # (items with skip_branches_only are branch-specific and should only apply when a branch is specified)
+    FILTER_SKIP_TESTS=".test_suites.$SKIP_PARSER_SUITE.skip_tests[] | select(.skip_in[] == \"$STREAM\") | select(has(\"skip_branches_only\") | not) | .name"
+    FILTER_SKIP_SUBSUITES=".test_suites.$SKIP_PARSER_SUITE.skip_subsuites[] | select(.skip_in[] == \"$STREAM\") | select(has(\"skip_branches_only\") | not) | .name"
+    FILTER_RUN_TESTS_ONLY=".test_suites.$SKIP_PARSER_SUITE.run_tests_only[] | select(.skip_in[] == \"$STREAM\") | select(has(\"skip_branches_only\") | not) | .name"
     SKIP_EXTRACTION=false
 fi
 

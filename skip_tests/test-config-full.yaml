@@ -63,7 +63,7 @@ test_suites:
         skip_in: ['midstream_sail']
       - name: "TestPilotResourceFilter"
         reason: "Disabling TestPilotResourceFilter test which requires experimental CRDs (#73669)"
-        skip_in: ['downstream','midstream_sail','midstream_sail']
+        skip_in: ['downstream','midstream_sail','midstream_helm']
     skip_subsuites: []
     run_tests_only: []
   security:
@@ -130,10 +130,10 @@ test_suites:
         skip_in: ['downstream','midstream_sail','midstream_helm']
       - name: "TestWaypointAsEgressGateway/http_origination_route_with_BackendTLSPolicy"
         reason: "Disabling because it requires experimental CRDs(#72020)"
-        skip_in: ['downstream','midstream_helm']
+        skip_in: ['downstream','midstream_sail','midstream_helm']
       - name: "TestWaypointAsEgressGateway/http_origination_targetPort_with_BackendTLSPolicy"
         reason: "Disabling because it requires experimental CRDs(#72020)"
-        skip_in: ['downstream','midstream_helm']
+        skip_in: ['downstream','midstream_sail','midstream_helm']
       - name: "TestAuthorizationGateway"
         reason: ""
         skip_in: ['downstream']
@@ -178,35 +178,35 @@ test_suites:
     skip_tests:
       - name: "TestAmbientInstall"
         reason: ""
-        skip_in: ['midstream_sail']
+        skip_in: ['midstream_helm']
       - name: "TestAmbientInstallMultiNamespace"
         reason: ""
-        skip_in: ['midstream_sail']
+        skip_in: ['midstream_helm']
       - name: "TestCanaryUpgradeFromTwoMinorRelease"
         reason: ""
-        skip_in: ['midstream_sail']
+        skip_in: ['midstream_helm']
       - name: "TestStableRevisionLabelsUpgradeFromPreviousMinorRelease"
         reason: ""
-        skip_in: ['midstream_sail']
+        skip_in: ['midstream_helm']
       - name: "TestStableRevisionLabelsUpgradeFromTwoMinorRelease"
         reason: ""
-        skip_in: ['midstream_sail']
+        skip_in: ['midstream_helm']
       - name: "TestAmbientInPlaceUpgradeFromPreviousMinorRelease"
         reason: ""
-        skip_in: ['midstream_sail']
+        skip_in: ['midstream_helm']
       - name: "TestZtunnelFromPreviousMinorRelease"
         reason: ""
-        skip_in: ['midstream_sail']
+        skip_in: ['midstream_helm']
       - name: "TestAmbientStableRevisionLabelsGatewayStatus"
         reason: ""
-        skip_in: ['midstream_sail']
+        skip_in: ['midstream_helm']
       - name: "TestDefaultInPlaceUpgradeFromPreviousMinorRelease"
         reason: ""
-        skip_in: ['midstream_sail']
+        skip_in: ['midstream_helm']
         skip_branches_only: ['release-1.24']
       - name: "TestCanaryUpgradeFromPreviousMinorRelease"
         reason: ""
-        skip_in: ['midstream_sail']
+        skip_in: ['midstream_helm']
         skip_branches_only: ['release-1.24']
     skip_subsuites: []
     run_tests_only: []
