@@ -1,7 +1,7 @@
 #!/bin/bash
 # Parse test configuration from YAML file
 # Usage: ./parse-test-config.sh <config_file> <suite> [stream]
-# Example: ./parse-test-config.sh test-config-full.yaml security midstream
+# Example: ./parse-test-config.sh test-config-full.yaml security midstream_sail
 
 set -e
 
@@ -14,14 +14,14 @@ if [ -z "$CONFIG_FILE" ] || [ -z "$SKIP_PARSER_SUITE" ] || [ -z "$STREAM" ]; the
     echo "Usage: $0 <config_file> <suite> <stream> [branch]" >&2
     echo "  config_file: path to YAML config" >&2
     echo "  suite: pilot, ambient, telemetry, security, or helm" >&2
-    echo "  stream: midstream or downstream - returns only tests with this value in skip_in" >&2
+    echo "  stream: midstream_sail, midstream_helm, or downstream - returns only tests with this value in skip_in" >&2
     echo "  branch: (optional) branch name - filters by branches_only/skip_branches_only fields" >&2
     exit 1
 fi
 
 # Validate stream parameter
-if [ "$STREAM" != "midstream" ] && [ "$STREAM" != "downstream" ]; then
-    echo "Error: stream must be 'midstream' or 'downstream', got: '$STREAM'" >&2
+if [ "$STREAM" != "midstream_sail" ] && [ "$STREAM" != "midstream_helm" ] && [ "$STREAM" != "downstream" ]; then
+    echo "Error: stream must be 'midstream_sail', 'midstream_helm', or 'downstream', got: '$STREAM'" >&2
     exit 1
 fi
 
@@ -152,11 +152,15 @@ echo "SKIP_PARSER_RUN_TESTS_ONLY='$SKIP_PARSER_RUN_TESTS_ONLY'"
 echo "SKIP_PARSER_SUITE='$SKIP_PARSER_SUITE'"
 
 # Example usage in another script:
-# Midstream:
-#   eval $(./parse-test-config.sh test-config-full.yaml security midstream)
+# Midstream Sail:
+#   eval $(./parse-test-config.sh test-config-full.yaml security midstream_sail)
+# Midstream Helm:
+#   eval $(./parse-test-config.sh test-config-full.yaml security midstream_helm)
 # Downstream with branch:
 #   eval $(./parse-test-config.sh test-config-full.yaml security downstream master)
-# Midstream with branch:
-#   eval $(./parse-test-config.sh test-config-full.yaml helm midstream release-1.24)
+# Midstream Sail with branch:
+#   eval $(./parse-test-config.sh test-config-full.yaml helm midstream_sail release-1.24)
+# Midstream Helm with branch:
+#   eval $(./parse-test-config.sh test-config-full.yaml helm midstream_helm release-1.24)
 # Then run:
 #   integ-suite-ocp.sh "$SKIP_PARSER_SUITE" "$SKIP_PARSER_SKIP_TESTS" "$SKIP_PARSER_SKIP_SUBSUITES" "$SKIP_PARSER_RUN_TESTS_ONLY"
