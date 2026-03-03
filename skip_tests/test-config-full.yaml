@@ -133,7 +133,11 @@ test_suites:
       - name: "TestZtunnelSecureMetrics"
         reason: ""
         skip_in: ['downstream']
-    skip_subsuites: []
+    skip_subsuites:
+      - name: "pqc"
+        reason: "This is a temporary change until we have ztunnel compiled with OpenSSL 3.5."
+        skip_in: ['midstream']
+        skip_branches_only: ['release-1.28']
     run_tests_only: []
   telemetry:
     skip_tests:

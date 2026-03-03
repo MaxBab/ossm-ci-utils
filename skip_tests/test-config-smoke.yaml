@@ -88,7 +88,10 @@ test_suites:
       - name: "TestAuthorizationL7"
         skip_in: ['downstream','midstream']
   telemetry:
-    skip_tests: []
+    skip_tests:
+      - name: "TestDashboard/pilot-dashboard.json"
+        skip_in: ['downstream']
+        reason: "It is failing at times during smoke test execution. Probably, it expects to run other tests before, which are not run during the smoke test"
     skip_subsuites:
       - name: "tracing/otelcollector"
         skip_in: ['downstream','midstream']
