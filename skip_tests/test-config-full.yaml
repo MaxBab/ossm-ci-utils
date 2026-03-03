@@ -137,7 +137,7 @@ test_suites:
     run_tests_only: []
   telemetry:
     skip_tests:
-      - name: "TestDashboard/pilot-dashboard.json'"
+      - name: "TestDashboard/pilot-dashboard.json"
         reason: ""
         skip_in: ['downstream']
     skip_subsuites: []
