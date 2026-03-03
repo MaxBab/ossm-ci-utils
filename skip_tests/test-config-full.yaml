@@ -7,171 +7,206 @@
 test_suites:
   pilot:
     skip_tests:
-      - name: "TestGateway/managed-owner"
-        reason: ""
-        skip_in: ['downstream','midstream']
-      - name: "TestCNIVersionSkew"
-        reason: ""
-        skip_in: ['downstream','midstream']
-      - name: "TestPilotResourceFilter"
-        reason: "Disabling TestPilotResourceFilter test which requires experimental CRDs (#73669)"
-        skip_in: ['downstream','midstream']
-      - name: "TestAuthZCheck"
-        reason: ""
-        skip_in: ['downstream']
-      - name: "TestKubeInject"
-        reason: ""
-        skip_in: ['downstream']
-      - name: "TestRevisionTags"
-        reason: ""
-        skip_in: ['downstream']
-      - name: "TestUninstallByRevision"
-        reason: ""
-        skip_in: ['downstream']
-      - name: "TestUninstallWithSetFlag"
-        reason: ""
-        skip_in: ['downstream']
-      - name: "TestUninstallCustomFile"
-        reason: ""
-        skip_in: ['downstream']
-      - name: "TestUninstallPurge"
-        reason: ""
-        skip_in: ['downstream']
-      - name: "TestCNIRaceRepair"
-        reason: ""
-        skip_in: ['downstream']
-      - name: "TestValidation"
-        reason: ""
-        skip_in: ['downstream']
-      - name: "TestWebhook"
-        reason: ""
-        skip_in: ['downstream']
-      - name: "TestMultiRevision"
-        reason: ""
-        skip_in: ['downstream']
       - name: "TestGatewayConformance"
         reason: ""
-        skip_in: ['midstream']
+        skip_in: ['midstream_sail','midstream_helm']
+      - name: "TestGateway/managed-owner"
+        reason: ""
+        skip_in: ['downstream','midstream_sail','midstream_helm']
+      - name: "TestCNIVersionSkew"
+        reason: ""
+        skip_in: ['downstream','midstream_sail','midstream_helm']
       - name: "TestGateway"
         reason: ""
-        skip_in: ['midstream']
-        branches_only: ['master']
+        skip_in: ['midstream_sail','midstream_helm']
+      - name: "TestAuthZCheck"
+        reason: ""
+        skip_in: ['downstream','midstream_sail']
+      - name: "TestKubeInject"
+        reason: ""
+        skip_in: ['downstream','midstream_sail']
+      - name: "TestRevisionTags"
+        reason: ""
+        skip_in: ['downstream','midstream_sail']
+      - name: "TestUninstallByRevision"
+        reason: ""
+        skip_in: ['downstream','midstream_sail']
+      - name: "TestUninstallWithSetFlag"
+        reason: ""
+        skip_in: ['downstream','midstream_sail']
+      - name: "TestUninstallCustomFile"
+        reason: ""
+        skip_in: ['downstream','midstream_sail']
+      - name: "TestUninstallPurge"
+        reason: ""
+        skip_in: ['downstream','midstream_sail']
+      - name: "TestCNIRaceRepair"
+        reason: ""
+        skip_in: ['downstream','midstream_sail']
+      - name: "TestValidation"
+        reason: ""
+        skip_in: ['downstream','midstream_sail']
+      - name: "TestWebhook"
+        reason: ""
+        skip_in: ['downstream','midstream_sail']
+      - name: "TestMultiRevision"
+        reason: ""
+        skip_in: ['downstream','midstream_sail']
+      - name: "TestAnalysisWritesStatus"
+        reason: ""
+        skip_in: ['midstream_sail']
+      - name: "TestLocality"
+        reason: ""
+        skip_in: ['midstream_sail']
+      - name: "TestPreserveHTTPHeaderCaseConfiguration"
+        reason: ""
+        skip_in: ['midstream_sail']
+      - name: "TestPilotResourceFilter"
+        reason: "Disabling TestPilotResourceFilter test which requires experimental CRDs (#73669)"
+        skip_in: ['downstream','midstream_sail','midstream_sail']
     skip_subsuites: []
     run_tests_only: []
   security:
     skip_tests:
       - name: "TestAuthz_CustomServer"
         reason: ""
-        skip_in: ['downstream']
+        skip_in: ['downstream','midstream_sail']
+      - name: "TestGatewayAPIRequestAuthentication"
+        reason: ""
+        skip_in: ['midstream_sail']
       - name: "TestNormalization"
         reason: ""
-        skip_in: ['downstream']
+        skip_in: ['downstream','midstream_sail']
       - name: "TestTlsGatewaysWithQUIC"
         reason: ""
         skip_in: ['downstream']
       - name: "TestMtlsGatewaysWithQUIC"
         reason: ""
         skip_in: ['downstream']
+      - name: "TestAuthz_MultipleCustomProviders_NonOverlapping"
+        reason: "The tests modify its configuration during the execution, which is not supported right now by Sail Operator install flow. (#74327)"
+        skip_in: ['downstream','midstream_sail']
+      - name: "TestAuthz_MultipleCustomProviders_Overlapping"
+        reason: "The tests modify its configuration during the execution, which is not supported right now by Sail Operator install flow. (#74327)"
+        skip_in: ['downstream','midstream_sail']
+      - name: "TestMultiTlsGateway_InvalidSecret"
+        reason: ""
+        skip_in: ['midstream_helm']
+        skip_branches_only: ['release-1.24']
+      - name: "TestMultiMtlsGateway_InvalidSecret"
+        reason: ""
+        skip_in: ['midstream_helm']
+        skip_branches_only: ['release-1.24']
     skip_subsuites:
       - name: "external_ca"
         reason: ""
-        skip_in: ['downstream']
+        skip_in: ['downstream','midstream_sail']
       - name: "file_mounted_certs"
         reason: ""
-        skip_in: ['downstream']
+        skip_in: ['downstream','midstream_sail']
       - name: "policy_attachment_only"
         reason: ""
-        skip_in: ['downstream']
+        skip_in: ['downstream','midstream_sail']
     run_tests_only: []
   ambient:
     skip_tests:
       - name: "TestTrafficWithCNIUpgrade"
         reason: ""
-        skip_in: ['downstream','midstream']
+        skip_in: ['downstream','midstream_sail','midstream_helm']
       - name: "TestCNIMisconfigHealsOnRestart"
         reason: ""
-        skip_in: ['downstream','midstream']
+        skip_in: ['downstream','midstream_sail','midstream_helm']
       - name: "TestGatewayConformance"
         reason: ""
-        skip_in: ['downstream','midstream']
+        skip_in: ['downstream','midstream_sail','midstream_helm']
       - name: "TestAPIServer"
         reason: ""
-        skip_in: ['downstream','midstream']
+        skip_in: ['downstream','midstream_sail','midstream_helm']
       - name: "TestTCPRoute"
         reason: ""
-        skip_in: ['downstream','midstream']
+        skip_in: ['downstream','midstream_sail','midstream_helm']
       - name: "TestTLSRoute"
         reason: ""
-        skip_in: ['downstream','midstream']
+        skip_in: ['downstream','midstream_sail','midstream_helm']
       - name: "TestWaypointAsEgressGateway/http_origination_route_with_BackendTLSPolicy"
-        reason: ""
-        skip_in: ['downstream','midstream']
+        reason: "Disabling because it requires experimental CRDs(#72020)"
+        skip_in: ['downstream','midstream_helm']
       - name: "TestWaypointAsEgressGateway/http_origination_targetPort_with_BackendTLSPolicy"
-        reason: ""
-        skip_in: ['downstream','midstream']
+        reason: "Disabling because it requires experimental CRDs(#72020)"
+        skip_in: ['downstream','midstream_helm']
       - name: "TestAuthorizationGateway"
         reason: ""
         skip_in: ['downstream']
       - name: "TestTrafficWithEstablishedPodsIfCNIMissing"
         reason: ""
-        skip_in: ['downstream']
+        skip_in: ['downstream','midstream_sail']
       - name: "TestTaintsRemoved"
         reason: ""
-        skip_in: ['downstream']
+        skip_in: ['downstream','midstream_sail']
       - name: "TestTrafficWithCNIRepair"
         reason: ""
-        skip_in: ['downstream']
+        skip_in: ['downstream','midstream_sail']
       - name: "TestWaypointChanges"
         reason: ""
-        skip_in: ['downstream']
+        skip_in: ['downstream','midstream_sail']
+      - name: "TestZtunnelSecureMetrics"
+        reason: ""
+        skip_in: ['downstream','midstream_sail']
       - name: "TestZtunnelRestart"
         reason: ""
         skip_in: ['downstream']
       - name: "TestZtunnelConfig"
         reason: ""
         skip_in: ['downstream']
-      - name: "TestZtunnelSecureMetrics"
-        reason: ""
-        skip_in: ['downstream']
-    skip_subsuites: []
+      - name: "TestZtunnelCRL"
+        reason: "The new TestZtunnelCRL test still does not have supported values within Sail Operator for the test. Would be enabled, once fixed.(#74391)"
+        skip_in: ['downstream','midstream_sail']
+    skip_subsuites:
+      - name: "pqc"
+        reason: "This is a temporary change until we have ztunnel compiled with OpenSSL 3.5."
+        skip_in: ['midstream_sail']
+        skip_branches_only: ['release-1.28']
     run_tests_only: []
   telemetry:
     skip_tests:
       - name: "TestDashboard/pilot-dashboard.json"
         reason: ""
-        skip_in: ['downstream']
+        skip_in: ['downstream','midstream_sail']
     skip_subsuites: []
     run_tests_only: []
   helm:
     skip_tests:
       - name: "TestAmbientInstall"
         reason: ""
-        skip_in: ['midstream']
+        skip_in: ['midstream_sail']
       - name: "TestAmbientInstallMultiNamespace"
         reason: ""
-        skip_in: ['midstream']
+        skip_in: ['midstream_sail']
       - name: "TestCanaryUpgradeFromTwoMinorRelease"
         reason: ""
-        skip_in: ['midstream']
+        skip_in: ['midstream_sail']
       - name: "TestStableRevisionLabelsUpgradeFromPreviousMinorRelease"
         reason: ""
-        skip_in: ['midstream']
+        skip_in: ['midstream_sail']
       - name: "TestStableRevisionLabelsUpgradeFromTwoMinorRelease"
         reason: ""
-        skip_in: ['midstream']
+        skip_in: ['midstream_sail']
       - name: "TestAmbientInPlaceUpgradeFromPreviousMinorRelease"
         reason: ""
-        skip_in: ['midstream']
+        skip_in: ['midstream_sail']
       - name: "TestZtunnelFromPreviousMinorRelease"
         reason: ""
-        skip_in: ['midstream']
+        skip_in: ['midstream_sail']
+      - name: "TestAmbientStableRevisionLabelsGatewayStatus"
+        reason: ""
+        skip_in: ['midstream_sail']
       - name: "TestDefaultInPlaceUpgradeFromPreviousMinorRelease"
         reason: ""
-        skip_in: ['midstream']
+        skip_in: ['midstream_sail']
         skip_branches_only: ['release-1.24']
       - name: "TestCanaryUpgradeFromPreviousMinorRelease"
         reason: ""
-        skip_in: ['midstream']
+        skip_in: ['midstream_sail']
         skip_branches_only: ['release-1.24']
     skip_subsuites: []
     run_tests_only: []
