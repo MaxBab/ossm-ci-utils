@@ -93,10 +93,10 @@ test_suites:
         reason: ""
         skip_in: ['downstream','midstream_sail']
       - name: "TestTlsGatewaysWithQUIC"
-        reason: ""
+        reason: "QUIC protocol is not supported by OSSM yet. In midstream, AWS platform does not support QUIC, so the test skipped."
         skip_in: ['downstream']
       - name: "TestMtlsGatewaysWithQUIC"
-        reason: ""
+        reason: "QUIC protocol is not supported by OSSM yet. In midstream, AWS platform does not support QUIC, so the test skipped."
         skip_in: ['downstream']
       - name: "TestAuthz_MultipleCustomProviders_NonOverlapping"
         reason: "The tests modify its configuration during the execution, which is not supported right now by Sail Operator install flow. (#74327)"
@@ -149,11 +149,8 @@ test_suites:
       - name: "TestWaypointAsEgressGateway/http_origination_targetPort_with_BackendTLSPolicy"
         reason: "Disabling because it requires experimental CRDs(#72020)"
         skip_in: ['downstream','midstream_sail','midstream_helm']
-      - name: "TestAuthorizationGateway"
-        reason: ""
-        skip_in: ['downstream']
       - name: "TestTrafficWithEstablishedPodsIfCNIMissing"
-        reason: ""
+        reason: "The test modifies Istio configuration during the test execution. Sail flow does not support it yet"
         skip_in: ['downstream','midstream_sail']
       - name: "TestTaintsRemoved"
         reason: ""
@@ -162,17 +159,11 @@ test_suites:
         reason: ""
         skip_in: ['downstream','midstream_sail']
       - name: "TestWaypointChanges"
-        reason: ""
+        reason: "The test modifies Istio configuration during the test execution. Sail flow does not support it yet"
         skip_in: ['downstream','midstream_sail']
       - name: "TestZtunnelSecureMetrics"
         reason: ""
         skip_in: ['downstream','midstream_sail']
-      - name: "TestZtunnelRestart"
-        reason: ""
-        skip_in: ['downstream']
-      - name: "TestZtunnelConfig"
-        reason: ""
-        skip_in: ['downstream']
       - name: "TestZtunnelCRL"
         reason: "The new TestZtunnelCRL test still does not have supported values within Sail Operator for the test. Would be enabled, once fixed.(#74391)"
         skip_in: ['downstream','midstream_sail']
