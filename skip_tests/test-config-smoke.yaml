@@ -54,6 +54,8 @@ test_suites:
         skip_in: ['downstream','midstream_sail']
       - name: "crl"
         skip_in: ['downstream','midstream_sail']
+      - name: "pqc"
+        skip_in: ['downstream','midstream_sail']
     run_tests_only:
       - name: "TestStrictMTLS"
         skip_in: ['downstream','midstream_sail']
@@ -77,6 +79,8 @@ test_suites:
       - name: "cniupgrade"
         skip_in: ['downstream','midstream_sail']
       - name: "untaint"
+        skip_in: ['downstream','midstream_sail']
+      - name: "pqc"
         skip_in: ['downstream','midstream_sail']
     run_tests_only:
       - name: "TestTraffic"
