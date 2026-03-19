@@ -36,16 +36,16 @@ See [`skills/generate-e2e-tests/SKILL.md`](skills/generate-e2e-tests/SKILL.md) f
 ---
 
 ### `/ossm-ci:aws-scan`
-Inventory AWS resources across all regions, presenting two clean tables: potentially dangling resources and complete inventory.
+Inventory AWS resources across all regions, presenting two clean tables: potentially dangling resources and complete inventory. Uses AWS CLI commands directly — no external scripts required.
 
-**Requirements:** AWS CLI configured with valid credentials. Must be run from the ci-utils repo root (requires `scripts/aws-dangling/scan_aws_resources.sh`).
+**Requirements:** AWS CLI configured with valid credentials.
 
 ---
 
 ### `/ossm-ci:prow-metrics`
-Collect and present Prow CI execution data for OSSM repositories (istio, proxy, sail-operator, ztunnel), with summary statistics and TSV export for Excel.
+Collect and present Prow CI execution data for OSSM repositories (istio, proxy, sail-operator, ztunnel), with summary statistics and TSV export for Excel. Fetches directly from the Prow API using an inline Python script — no external scripts required.
 
-**Requirements:** Must be run from the ci-utils repo root (requires `scripts/prow-metrics/collect_ossm_data.py`).
+**Requirements:** `python3` and `jq` available in PATH.
 
 ## Skills
 
@@ -55,5 +55,4 @@ Collect and present Prow CI execution data for OSSM repositories (istio, proxy, 
 
 ## Notes
 
-- `ossm-ci:confidence` and `ossm-ci:generate-e2e-tests` are fully portable and can be used from any project
-- `ossm-ci:aws-scan` and `ossm-ci:prow-metrics` require scripts from this repository; run from the ci-utils repo root or after cloning it
+All four commands are fully portable and work from any project after installation.

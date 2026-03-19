@@ -50,14 +50,14 @@ cp <ci-utils>/plugins/ossm-ci/skills/generate-e2e-tests/documentation-e2e-genera
 #### `/ossm-ci:aws-scan`
 Inventories AWS resources across all regions and presents two clean tables: potentially dangling resources and a complete resource inventory. No analysis, no file generation — raw data only for the user to act on.
 
-**Requires:** AWS CLI configured with valid credentials. The command uses the script at [`scripts/aws-dangling/scan_aws_resources.sh`](scripts/aws-dangling/scan_aws_resources.sh).
+**Requires:** AWS CLI configured with valid credentials.
 
 ---
 
 #### `/ossm-ci:prow-metrics`
-Collects and presents Prow CI execution data for OSSM repositories (istio, proxy, sail-operator, ztunnel). Shows summary statistics, median execution times by job type, infrastructure usage, failed/pending jobs, and exports a TSV file for Excel import.
+Collects and presents Prow CI execution data for OSSM repositories (istio, proxy, sail-operator, ztunnel). Shows summary statistics, median execution times by job type, infrastructure usage, failed/pending jobs, and exports a TSV file for Excel import. Fetches directly from the Prow API — works from any project.
 
-The command uses the script at [`scripts/prow-metrics/collect_ossm_data.py`](scripts/prow-metrics/collect_ossm_data.py).
+**Requires:** `python3` available in PATH.
 
 ---
 
@@ -105,14 +105,14 @@ See [`skip_tests/README.md`](skip_tests/README.md) for full configuration refere
 
 ### `scripts/`
 
-Backend scripts used by the `ossm-ci` Claude Code plugin commands. These scripts handle the data collection and are invoked by the AI commands rather than being run manually.
+Standalone scripts for AWS resource scanning and Prow CI data collection. These can be run directly from the command line and are independent of the Claude Code plugin (the plugin commands use AWS CLI and the Prow API directly without these scripts).
 
-| Script | Used by | Description |
-|--------|---------|-------------|
-| `scripts/aws-dangling/scan_aws_resources.sh` | `/ossm-ci:aws-scan` | Scans all AWS regions for EC2, S3, RDS, ELB, and other resources |
-| `scripts/prow-metrics/collect_ossm_data.py` | `/ossm-ci:prow-metrics` | Collects Prow CI job data for OSSM repositories from the OpenShift Prow API |
+| Script | Description |
+|--------|-------------|
+| `scripts/aws-dangling/scan_aws_resources.sh` | Scans all AWS regions for EC2, S3, RDS, ELB, and other resources. Generates a full report, CSV findings, and cleanup guidance. |
+| `scripts/prow-metrics/collect_ossm_data.py` | Collects Prow CI job data for OSSM repositories and exports a TSV file for Excel import. |
 
-Both scripts can also be run directly if needed. See the READMEs in each subdirectory for standalone usage.
+See the READMEs in each subdirectory for standalone usage.
 
 ---
 

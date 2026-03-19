@@ -7,79 +7,175 @@ description: Collect and present Prow CI execution data for OSSM repositories, w
 You are an AI assistant specialized in gathering real execution data from Prow CI for OpenShift Service Mesh repositories. Your goal is to collect and present **completed test executions plus all currently pending jobs** with key metrics and timing data.
 
 **Default**: Collect the last 100 completed executions + all pending jobs.
-**Configurable**: Ask the user for their preference - either a specific number of completed jobs or a number of days of historical data.
+**Configurable**: Ask the user for a specific count or number of days.
 
 ## OSSM Repositories
 
-- `openshift-service-mesh/istio` - Istio midstream repository
-- `openshift-service-mesh/proxy` - Envoy proxy midstream repository
-- `openshift-service-mesh/sail-operator` - Sail Operator repository
-- `openshift-service-mesh/ztunnel` - Ztunnel midstream repository
+- `openshift-service-mesh/istio`
+- `openshift-service-mesh/proxy`
+- `openshift-service-mesh/sail-operator`
+- `openshift-service-mesh/ztunnel`
 
-## Prerequisites
+## Data Collection
 
-This command requires the Python script at `scripts/prow-metrics/collect_ossm_data.py` from the ci-utils repository. Run from the ci-utils repo root.
+Fetch data directly from the Prow API using `curl` and `jq`. No external scripts needed.
 
-## Your Task
+### Step 1 — Ask user for scope
 
-**Collect completed executions plus all currently pending jobs** across all OSSM repositories and present data-driven metrics without analysis or recommendations.
-
-**Collection Options:**
-- **Default**: Last 100 completed executions + all pending jobs
-- **By count**: User specifies number of completed jobs (e.g., 50, 200)
-- **By days**: User specifies days of historical data (e.g., 3 days, 1 week)
-
-### Data Collection Method
-
-**Execute the Python script** to collect OSSM Prow CI data:
-
-```bash
-# Default: 100 completed jobs + all pending
-cd scripts/prow-metrics && python3 collect_ossm_data.py
-
-# Interactive mode: Ask user for preferences
-cd scripts/prow-metrics && python3 collect_ossm_data.py --interactive
-
-# By count: Specific number of completed jobs
-cd scripts/prow-metrics && python3 collect_ossm_data.py --count 200
-
-# By days: Historical data for specific time period
-cd scripts/prow-metrics && python3 collect_ossm_data.py --days 7
+```
+How much Prow CI data should we collect?
+- Default (Recommended): Last 100 completed + all pending
+- Custom count: e.g. 50, 200, 500
+- Time-based: e.g. last 3 days, 7 days
 ```
 
-### Required Output Columns
+### Step 2 — Fetch and filter Prow data
 
-The script generates a TSV file with these exact columns:
-- **Job_Name** - Full Prow job name (not UUID)
-- **Repository** - Repository name (istio, sail-operator, etc.)
-- **Branch** - Branch/ref name
-- **Job_Type** - Job type (periodic, presubmit, postsubmit)
-- **Start_Time** - Job start timestamp
-- **Completion_Time** - Job completion timestamp
-- **Duration_Minutes** - Calculated duration in minutes
-- **Status** - Job status (success/failure/pending/aborted)
-- **Build_ID** - Build identifier
-- **Cluster** - Build cluster used (build05, build06, build09, etc.)
-- **Test_Suite_Type** - Categorized test type (sync-upstream, lpinterop, e2e, etc.)
-- **Spyglass_URL** - Link to job details
+Run this inline Python script to fetch and process the data. It fetches the Prow API, filters for OSSM repos, and outputs a JSON summary + TSV file:
 
-### Data Presentation Format
+```bash
+python3 - <<'EOF'
+import urllib.request, json, ssl, csv, sys
+from datetime import datetime, timezone, timedelta
+from statistics import median
 
-Present the data in this exact format:
+REPOS = [
+    'openshift-service-mesh/istio',
+    'openshift-service-mesh/proxy',
+    'openshift-service-mesh/sail-operator',
+    'openshift-service-mesh/ztunnel',
+]
+COUNT = 100      # Replace with user-specified count
+DAYS = None      # Replace with user-specified days (or None)
+
+def fetch_jobs():
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    url = "https://prow.ci.openshift.org/prowjobs.js"
+    req = urllib.request.Request(url, headers={"Accept-Encoding": "identity"})
+    with urllib.request.urlopen(req, context=ctx, timeout=120) as r:
+        data = json.loads(r.read().decode('utf-8'))
+    return data.get('items', data) if isinstance(data, dict) else data
+
+def repo_of(job):
+    refs = job.get('spec', {}).get('refs') or {}
+    org = refs.get('org', '')
+    repo = refs.get('repo', '')
+    if org and repo:
+        return f"{org}/{repo}"
+    extra = job.get('spec', {}).get('extra_refs', [])
+    if extra:
+        return f"{extra[0].get('org','')}/{extra[0].get('repo','')}"
+    return ''
+
+def suite_type(name):
+    n = name.lower()
+    if 'gencheck' in n or 'generate' in n: return 'gencheck'
+    if 'lint' in n: return 'lint'
+    if 'unit' in n: return 'unit-tests'
+    if 'e2e' in n or 'integration' in n or 'integ' in n: return 'e2e'
+    if 'sync' in n: return 'sync-upstream'
+    if 'interop' in n or 'lpinterop' in n: return 'lpinterop'
+    if 'build' in n or 'images' in n: return 'build'
+    return 'other'
+
+def duration_minutes(start, end):
+    if not start or not end: return None
+    fmt = '%Y-%m-%dT%H:%M:%SZ'
+    try:
+        s = datetime.strptime(start, fmt).replace(tzinfo=timezone.utc)
+        e = datetime.strptime(end, fmt).replace(tzinfo=timezone.utc)
+        return round((e - s).total_seconds() / 60, 1)
+    except: return None
+
+def spyglass_url(job):
+    build_id = job.get('status', {}).get('build_id', '')
+    job_name = job.get('spec', {}).get('job', '')
+    if build_id and job_name:
+        return f"https://prow.ci.openshift.org/view/gs/test-platform-results/logs/{job_name}/{build_id}"
+    return ''
+
+print("Fetching Prow data...", file=sys.stderr)
+all_jobs = fetch_jobs()
+
+cutoff = None
+if DAYS:
+    cutoff = datetime.now(timezone.utc) - timedelta(days=DAYS)
+
+ossm_jobs = [j for j in all_jobs if repo_of(j) in REPOS]
+
+completed = [j for j in ossm_jobs if j.get('status', {}).get('state') not in ('pending', 'triggered')]
+pending   = [j for j in ossm_jobs if j.get('status', {}).get('state') in ('pending', 'triggered')]
+
+if cutoff:
+    def started_after(j):
+        t = j.get('status', {}).get('startTime', '')
+        if not t: return False
+        try:
+            return datetime.strptime(t, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc) >= cutoff
+        except: return False
+    completed = [j for j in completed if started_after(j)]
+else:
+    completed = completed[:COUNT]
+
+rows = []
+for j in completed + pending:
+    spec   = j.get('spec', {})
+    status = j.get('status', {})
+    start  = status.get('startTime', '')
+    end    = status.get('completionTime', '')
+    rows.append({
+        'Job_Name':        spec.get('job', ''),
+        'Repository':      repo_of(j).split('/')[-1],
+        'Branch':          (spec.get('refs') or {}).get('base_ref', ''),
+        'Job_Type':        spec.get('type', ''),
+        'Start_Time':      start,
+        'Completion_Time': end,
+        'Duration_Minutes': duration_minutes(start, end) or '',
+        'Status':          status.get('state', ''),
+        'Build_ID':        status.get('build_id', ''),
+        'Cluster':         status.get('cluster', ''),
+        'Test_Suite_Type': suite_type(spec.get('job', '')),
+        'Spyglass_URL':    spyglass_url(j),
+    })
+
+from datetime import datetime as dt
+ts = dt.now().strftime('%Y%m%d_%H%M%S')
+label = f"days{DAYS}" if DAYS else f"{COUNT}completed"
+tsv_file = f"ossm_prow_{label}_plus_pending_{ts}.tsv"
+with open(tsv_file, 'w', newline='') as f:
+    w = csv.DictWriter(f, fieldnames=rows[0].keys(), delimiter='\t')
+    w.writeheader()
+    w.writerows(rows)
+
+print(json.dumps({'rows': rows, 'tsv_file': tsv_file}))
+EOF
+```
+
+### Step 3 — Compute and present statistics from the JSON output
+
+Parse the JSON output from the script above and calculate:
+- Total counts by status (success/failure/pending/aborted)
+- Breakdown by repository
+- Median duration per `Test_Suite_Type` (exclude rows with empty Duration_Minutes)
+- Build cluster distribution
+- Job start hour distribution (UTC)
+
+## Output Format
 
 ```
 PROW CI EXECUTION DATA - LAST [N] COMPLETED + PENDING JOBS
 ===========================================================
 Data collected: [timestamp]
-Time range: [actual date range of the data]
+Time range: [start date] to [end date]
 
 ## SUMMARY STATISTICS
 
 **Total executions:** [N]
-**Date range:** [start date] to [end date]
 **Success rate:** [X]% ([N] successful)
 **Failure rate:** [X]% ([N] failed)
-**Pending jobs:** [X]% ([N] running)
+**Pending jobs:** [N] running
 
 **Repository breakdown:**
 - istio: [N] jobs ([X]%)
@@ -89,21 +185,18 @@ Time range: [actual date range of the data]
 
 ## EXECUTION TIME BY JOB TYPE
 
-**Median execution times:**
 | Job Type | Median Duration | Count | Range |
 |----------|----------------|--------|--------|
-| [gencheck] | [X] min | [N] | [X]-[Y] min |
-| [lint] | [X] min | [N] | [X]-[Y] min |
-| [unit tests] | [X] min | [N] | [X]-[Y] min |
-| [integration tests] | [X] min | [N] | [X]-[Y] min |
-| [e2e tests] | [X] min | [N] | [X]-[Y] min |
+| e2e | [X] min | [N] | [X]-[Y] min |
+| lint | [X] min | [N] | [X]-[Y] min |
+| unit-tests | [X] min | [N] | [X]-[Y] min |
+| sync-upstream | [X] min | [N] | [X]-[Y] min |
 
 ## INFRASTRUCTURE USAGE
 
-**Build clusters used:**
+**Build clusters:**
 - build05: [N] jobs
 - build06: [N] jobs
-- build09: [N] jobs
 
 **Job distribution by time (UTC):**
 - 00:00-06:00: [N] jobs
@@ -113,40 +206,23 @@ Time range: [actual date range of the data]
 
 ## CURRENT ISSUES
 
-**Failed jobs in dataset:**
-| Job Name | Repository | Duration | Error Type |
-|----------|------------|----------|------------|
-| [job] | [repo] | [X] min | [failure/timeout/error] |
+**Failed jobs:**
+| Job Name | Repository | Duration | Status |
+|----------|------------|----------|--------|
 
-**Currently pending jobs:**
+**Pending jobs:**
 | Job Name | Repository | Running Time | Status |
 |----------|------------|--------------|--------|
-| [job] | [repo] | [X] min | pending |
 
 ## EXCEL DATA EXPORT
 
-**TSV file saved to:** `ossm_prow_last_[N]_completed_plus_pending_[timestamp].tsv`
-
+**TSV file saved to:** `[tsv_file]`
 Columns: Job_Name, Repository, Branch, Job_Type, Start_Time, Completion_Time, Duration_Minutes, Status, Build_ID, Cluster, Test_Suite_Type, Spyglass_URL
 ```
 
-## Execution Steps
+## Rules
 
-1. **Ask user for data collection preference** using AskUserQuestion:
-   - Default (Recommended): Last 100 completed executions + all pending
-   - Custom count: Specify number of completed jobs (50, 200, 500, etc.)
-   - Time-based: Historical data for specific days (3 days, 1 week, etc.)
-
-2. **Run the appropriate collection command** based on user's choice.
-
-3. **Present the generated report** to the user.
-
-## Important Instructions
-
-- **No analysis or recommendations** - present data only
-- **Always use real data** - never fabricate or estimate numbers
-- **Default to 100 completed executions plus all pending** unless user specifies otherwise
-- **Include median times by job type** - this is the key metric requested
-- **Save TSV file** for Excel import with real data
-- **Present dates and times** exactly as they appear in the source data
-- **Calculate durations** in minutes with decimal precision
+- **No analysis or recommendations** — present data only
+- **Never fabricate numbers** — all figures come from the API response
+- **Always save the TSV file** for Excel import
+- If the API fetch fails, report the error and do not guess at numbers
