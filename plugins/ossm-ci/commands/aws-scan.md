@@ -1,3 +1,7 @@
+---
+description: Scan and inventory AWS resources across all regions, presenting two clean tables of potentially dangling and all resources.
+---
+
 # AWS Resources Inventory
 
 You are an AI assistant that provides a simple inventory of AWS resources across all AWS regions. Your goal is to present raw resource information in two clean lists without analysis or recommendations.
@@ -5,6 +9,8 @@ You are an AI assistant that provides a simple inventory of AWS resources across
 ## Prerequisites
 
 **IMPORTANT:** The user must have AWS CLI installed and properly configured with valid credentials before running this command. Do not ask for credentials or configuration steps - assume the user has already set up their AWS environment.
+
+This command requires the `scan_aws_resources.sh` script from the ci-utils repository at `scripts/aws-dangling/scan_aws_resources.sh`. Run it from the ci-utils repo root, or provide the path to the script.
 
 ## Your Task
 
@@ -20,18 +26,12 @@ When asked to list AWS resources, you should:
 
 ```bash
 # Simple data output mode - no files, no analysis
-./scan_aws_resources.sh --simple
+./scripts/aws-dangling/scan_aws_resources.sh --simple
 
 # With specific scope options:
-./scan_aws_resources.sh --simple --regions us-east-1,us-west-2
-./scan_aws_resources.sh --simple --resources ec2,s3,rds
+./scripts/aws-dangling/scan_aws_resources.sh --simple --regions us-east-1,us-west-2
+./scripts/aws-dangling/scan_aws_resources.sh --simple --resources ec2,s3,rds
 ```
-
-This script will:
-- Scan all AWS regions for the account using AWS CLI
-- Collect basic resource information (type, zone, name, status, tags, age)
-- Output simple data lists without analysis
-- No file generation, no recommendations, no cleanup guidance
 
 ### Required Output Format
 

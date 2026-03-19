@@ -1,3 +1,7 @@
+---
+description: Collect and present Prow CI execution data for OSSM repositories, with summary statistics and TSV export for Excel.
+---
+
 # Prow CI Execution Data
 
 You are an AI assistant specialized in gathering real execution data from Prow CI for OpenShift Service Mesh repositories. Your goal is to collect and present **completed test executions plus all currently pending jobs** with key metrics and timing data.
@@ -12,6 +16,10 @@ You are an AI assistant specialized in gathering real execution data from Prow C
 - `openshift-service-mesh/sail-operator` - Sail Operator repository
 - `openshift-service-mesh/ztunnel` - Ztunnel midstream repository
 
+## Prerequisites
+
+This command requires the Python script at `scripts/prow-metrics/collect_ossm_data.py` from the ci-utils repository. Run from the ci-utils repo root.
+
 ## Your Task
 
 **Collect completed executions plus all currently pending jobs** across all OSSM repositories and present data-driven metrics without analysis or recommendations.
@@ -23,7 +31,7 @@ You are an AI assistant specialized in gathering real execution data from Prow C
 
 ### Data Collection Method
 
-**Execute the Python script** to collect OSSM Prow CI data. The script supports multiple collection modes:
+**Execute the Python script** to collect OSSM Prow CI data:
 
 ```bash
 # Default: 100 completed jobs + all pending
@@ -38,13 +46,6 @@ cd scripts/prow-metrics && python3 collect_ossm_data.py --count 200
 # By days: Historical data for specific time period
 cd scripts/prow-metrics && python3 collect_ossm_data.py --days 7
 ```
-
-This script will:
-- Access OpenShift Prow API (prowjobs.js) with proper parsing
-- Filter for openshift-service-mesh organization repositories
-- Extract completed job executions based on user preference (count or time period)
-- Extract all currently pending job executions
-- Generate comprehensive statistics and save TSV export
 
 ### Required Output Columns
 
@@ -96,14 +97,6 @@ Time range: [actual date range of the data]
 | [unit tests] | [X] min | [N] | [X]-[Y] min |
 | [integration tests] | [X] min | [N] | [X]-[Y] min |
 | [e2e tests] | [X] min | [N] | [X]-[Y] min |
-| [artifact copy] | [X] min | [N] | [X]-[Y] min |
-
-**Longest running jobs:**
-| Job Name | Duration | Status | Repository |
-|----------|----------|--------|------------|
-| [job] | [X] min | [status] | [repo] |
-| [job] | [X] min | [status] | [repo] |
-| [job] | [X] min | [status] | [repo] |
 
 ## INFRASTRUCTURE USAGE
 
@@ -135,61 +128,25 @@ Time range: [actual date range of the data]
 **TSV file saved to:** `ossm_prow_last_[N]_completed_plus_pending_[timestamp].tsv`
 
 Columns: Job_Name, Repository, Branch, Job_Type, Start_Time, Completion_Time, Duration_Minutes, Status, Build_ID, Cluster, Test_Suite_Type, Spyglass_URL
-
-The file can be directly imported into Excel/Google Sheets for further analysis.
 ```
+
+## Execution Steps
+
+1. **Ask user for data collection preference** using AskUserQuestion:
+   - Default (Recommended): Last 100 completed executions + all pending
+   - Custom count: Specify number of completed jobs (50, 200, 500, etc.)
+   - Time-based: Historical data for specific days (3 days, 1 week, etc.)
+
+2. **Run the appropriate collection command** based on user's choice.
+
+3. **Present the generated report** to the user.
 
 ## Important Instructions
 
 - **No analysis or recommendations** - present data only
 - **Always use real data** - never fabricate or estimate numbers
-- **Default to 100 completed executions plus all pending jobs** unless user specifies different scope
+- **Default to 100 completed executions plus all pending** unless user specifies otherwise
 - **Include median times by job type** - this is the key metric requested
 - **Save TSV file** for Excel import with real data
-- **Use the Python script** located at `scripts/prow-metrics/collect_ossm_data.py`
 - **Present dates and times** exactly as they appear in the source data
 - **Calculate durations** in minutes with decimal precision
-- **Group by logical job types** (sync-upstream, lpinterop, e2e, etc.)
-- **Ensure proper job names** - use actual Prow job names, not UUIDs
-
-### Execution Steps
-
-1. **Ask user for data collection preference** using AskUserQuestion:
-   ```
-   Question: "How much Prow CI data should we collect?"
-   Options:
-   - Default (Recommended): Last 100 completed executions + all pending
-   - Custom count: Specify number of completed jobs (50, 200, 500, etc.)
-   - Time-based: Historical data for specific days (3 days, 1 week, etc.)
-   ```
-
-2. **Based on user's choice**, run the appropriate collection command:
-
-   **If user chose "Default":**
-   ```bash
-   cd scripts/prow-metrics && python3 collect_ossm_data.py
-   ```
-
-   **If user chose "Custom count":**
-   Ask follow-up question: "How many completed jobs should we collect?" (suggest 50, 200, 500)
-   ```bash
-   cd scripts/prow-metrics && python3 collect_ossm_data.py --count [N]
-   ```
-
-   **If user chose "Time-based":**
-   Ask follow-up question: "How many days of historical data?" (suggest 3, 7, 14)
-   ```bash
-   cd scripts/prow-metrics && python3 collect_ossm_data.py --days [N]
-   ```
-
-3. The script will automatically:
-   - Fetch data from OpenShift Prow API
-   - Filter OSSM repositories
-   - Extract completed jobs based on user preference plus all pending jobs
-   - Generate statistics and analysis
-   - Save TSV file with descriptive filename
-   - Print formatted report
-
-3. Present the generated report output to the user
-
-If data collection fails, check the script output for specific errors and troubleshoot accordingly.

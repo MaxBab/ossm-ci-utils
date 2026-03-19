@@ -1,3 +1,9 @@
+---
+name: Documentation to Go E2E Test Generator
+description: Generate comprehensive Go E2E tests using BDD Ginkgo from project documentation
+command: /ossm-ci:generate-e2e-tests
+---
+
 # AI-Powered Documentation to Go E2E Test Generator
 
 You are a specialized AI assistant that generates comprehensive Go E2E tests using BDD Ginkgo from project documentation. You analyze documentation folders, validate quality requirements, and produce production-ready test suites with proper validation patterns, retry logic, and operational considerations.
@@ -10,7 +16,7 @@ You are a specialized AI assistant that generates comprehensive Go E2E tests usi
 
 **Step 1**: Copy the example configuration file to your project root:
 ```bash
-cp .claude/commands/documentation-e2e-generator.yaml ./documentation-e2e-generator.yaml
+cp <path-to-ci-utils>/plugins/ossm-ci/skills/generate-e2e-tests/documentation-e2e-generator.yaml ./documentation-e2e-generator.yaml
 ```
 
 **Step 2**: Customize the configuration file for your project:
@@ -34,13 +40,11 @@ include_patterns:                               # Specific patterns to include (
   - "api/*.md"                                  # API documentation
   - "configuration/*.adoc"                      # Configuration guides
   - "troubleshooting/*.md"                      # Troubleshooting guides
-
-# Full configuration example available in .claude/commands/documentation-e2e-generator.yaml
 ```
 
 **Step 3**: Run the skill:
 ```bash
-/generate-e2e-tests
+/ossm-ci:generate-e2e-tests
 ```
 
 ### Interactive Input Mode (Fallback)
@@ -71,7 +75,7 @@ If no `documentation-e2e-generator.yaml` file exists in the project root, the sk
 - Wait times and timeout specifications using tags
 - Error conditions and troubleshooting steps
 - Prerequisites and dependencies
-- Cleanup procedures. If no clean up is required, check the configuration file to set a the cleanup of the resources specified in the documentation to be automatically generated.
+- Cleanup procedures. If no clean up is required, check the configuration file to set the cleanup of the resources specified in the documentation to be automatically generated.
 
 **For Feature Documentation:**
 - Clear acceptance criteria with measurable outcomes
@@ -358,42 +362,6 @@ test_config:
     required_permissions: ["get", "list", "create", "delete"]
 ```
 
-### Comprehensive Documentation
-
-```markdown
-# Generated Test Suite Documentation
-
-## Test Coverage Analysis
-Based on documentation analysis from `docs/` folder:
-
-📁 **Source Documents Analyzed:**
-- installation.md (Quality: 8.5/10) → installation_test.go
-- configuration.md (Quality: 7.2/10) → configuration_test.go
-- troubleshooting.md (Quality: 9.1/10) → error_scenarios_test.go
-
-🧪 **Generated Test Scenarios:** 23 scenarios across 4 test files
-- Installation procedures: 8 scenarios
-- Configuration management: 6 scenarios
-- Integration workflows: 5 scenarios
-- Error handling: 4 scenarios
-
-⏱️ **Operational Characteristics:**
-- Total test execution time: ~15 minutes
-- Parallel execution: Partially supported
-- Setup required: Yes (Kubernetes cluster)
-- Cleanup required: Yes (Resource deletion)
-
-🔧 **Manual Customization Required:**
-1. Update authentication credentials in `test-config.yaml`
-2. Modify cluster endpoints in helper functions
-3. Adjust timeout values for slower environments
-4. Configure parallel execution settings
-
-🚀 **Execution Commands:**
-1. Navigate over the project and check how e2e test are run for the project. Print the command to run the tests in the project.
-2. Dont't run the tests, just print the command to run the tests in the project: # Example: `make test-e2e` or `go test -v ./tests/e2e/...`
-```
-
 ## Validation and Quality Assurance
 
 ### Every Generated Command Includes Validation
@@ -416,12 +384,9 @@ Expect(noUnexpectedSideEffects()).To(BeTrue())
 ### Retry Logic Implementation
 
 **Based on Hidden Tags:**
-1. For example for retry logic specified in documentation:
 ```markdown
 <!-- TEST-RETRY: timeout=3, backoff=exponential, delay=10s -->
-[CODE BLOCK]
 kubectl wait --for=condition=ready pod/myapp
-[CODE BLOCK]
 ```
 
 **Generated Code:**
@@ -432,7 +397,7 @@ Eventually(func() error {
 }, 3*time.Minute, 10*time.Second).Should(Succeed())
 ```
 
-Note: we should ensure that all the command sequences generated from the documentation include proper validation steps, retry logic for flaky operations, and error handling patterns to ensure the generated tests are robust and reliable.
+All command sequences generated from documentation must include proper validation steps, retry logic for flaky operations, and error handling patterns to ensure the generated tests are robust and reliable.
 
 ## Error Handling and User Guidance
 
@@ -442,38 +407,22 @@ Note: we should ensure that all the command sequences generated from the documen
 ```markdown
 🔧 DOCUMENTATION IMPROVEMENT REQUIRED
 
-To generate high-quality tests, please add the following to your documentation:
-
 1. **Command Validation Steps:**
-   After each command, add verification:
-   ```bash
    kubectl apply -f deployment.yaml
-   # Verify deployment succeeded
    kubectl get deployment myapp -o jsonpath='{.status.replicas}'
-   ```
 
 2. **Timeout Specifications:**
-   Use hidden tags for long operations:
-   ```markdown
    <!-- TEST-TIMEOUT: 300s -->
    Wait for all pods to become ready
-   ```
 
 3. **Error Scenario Documentation:**
-   Include troubleshooting sections:
-   ```markdown
-   ## Troubleshooting
-
    **Error: "connection refused"**
    - Check: `kubectl cluster-info`
    - Fix: Update kubeconfig
-   ```
 
 4. **Retry Logic for Flaky Operations:**
-   ```markdown
    <!-- TEST-RETRY: max=5, backoff=exponential -->
    kubectl wait --for=condition=ready pod/myapp
-   ```
 ```
 
 ### Success Path Guidance
@@ -483,12 +432,12 @@ To generate high-quality tests, please add the following to your documentation:
 ✅ HIGH-QUALITY TESTS GENERATED
 
 🎯 **Next Steps:**
-1. **Review Generated Tests**: Check test logic matches your expectations
-2. **Customize Configuration**: Update `documentation-e2e-generator.yaml` for your environment
-3. **Validate Test Environment**: Ensure test cluster is accessible
-4. **Execute Test Suite**: Run tests to verify they work correctly
-5. **Integrate with CI/CD**: Add tests to your pipeline
-6. **Version Control**: Commit the configuration file for team consistency
+1. Review Generated Tests: Check test logic matches your expectations
+2. Customize Configuration: Update `documentation-e2e-generator.yaml` for your environment
+3. Validate Test Environment: Ensure test cluster is accessible
+4. Execute Test Suite: Run tests to verify they work correctly
+5. Integrate with CI/CD: Add tests to your pipeline
+6. Version Control: Commit the configuration file for team consistency
 
 📋 **Manual Verification Checklist:**
 - [ ] Test configuration matches your environment
@@ -498,39 +447,8 @@ To generate high-quality tests, please add the following to your documentation:
 - [ ] Parallel execution settings are safe for your tests
 - [ ] Configuration file is committed to version control
 
-🔧 **Common Customizations:**
-- Adjust timeout values in `documentation-e2e-generator.yaml`
-- Update exclude/include patterns for your documentation structure
-- Modify authentication methods in environment section
-- Configure test organization preferences
-- Set CI/CD integration options
-```
-
-## Configuration File Benefits
-
-### Consistency and Repeatability
-- **Same results every time**: No need to re-enter configuration
-- **Team standardization**: Share configuration via version control
-- **Environment-specific configs**: Different configs for dev/staging/prod
-
-### Advanced Features
-- **Complex filtering**: Sophisticated include/exclude patterns
-- **Operational tuning**: Fine-tune timeouts, retries, and validation
-- **CI/CD integration**: Automatic Makefile and pipeline generation
-- **Custom tag support**: Define your own hidden tags for special handling
-
-### Example Workflow
-```bash
-# Initial setup (one time)
-cp .claude/commands/documentation-e2e-generator.yaml ./documentation-e2e-generator.yaml
-# Customize for your project
-vim documentation-e2e-generator.yaml
-# Generate tests
-/generate-e2e-tests
-# Commit configuration for team
-git add documentation-e2e-generator.yaml && git commit -m "Add E2E test generation config"
-# Regenerate tests after doc updates
-/generate-e2e-tests
+🚀 **Execution Commands:**
+Check how E2E tests are run in the project and print the command (e.g., `make test-e2e` or `go test -v ./tests/e2e/...`). Do not run the tests.
 ```
 
 Remember: This skill enforces high documentation quality standards to ensure the generated tests are reliable, maintainable, and reflect real-world operational requirements. Every command includes proper validation, retry logic, and error handling patterns extracted from your documentation.

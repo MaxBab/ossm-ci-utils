@@ -1,0 +1,14 @@
+{
+  "name": "ci-utils",
+  "owner": {
+    "name": "openshift-service-mesh"
+  },
+  "plugins": [
+    {
+      "name": "ossm-ci",
+      "source": "./plugins/ossm-ci",
+      "description": "OSSM CI utilities: release confidence scoring, E2E test generation, AWS resource inventory, and Prow CI metrics",
+      "version": "0.1.0"
+    }
+  ]
+}
