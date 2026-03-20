@@ -36,7 +36,12 @@ See [`skills/generate-e2e-tests/SKILL.md`](skills/generate-e2e-tests/SKILL.md) f
 ---
 
 ### `/ossm-ci:aws-scan`
-Inventory AWS resources across all regions, presenting two clean tables: potentially dangling resources and complete inventory. Uses AWS CLI commands directly — no external scripts required.
+Gives you the exact commands to download and run the audited read-only inventory script yourself. The script outputs two tables directly in your terminal — Claude does not execute anything.
+
+```bash
+curl -O https://raw.githubusercontent.com/openshift-service-mesh/ci-utils/main/scripts/aws-scan-audited.sh
+bash aws-scan-audited.sh
+```
 
 **Requirements:** AWS CLI configured with valid credentials.
 
@@ -56,3 +61,13 @@ Collect and present Prow CI execution data for OSSM repositories (istio, proxy, 
 ## Notes
 
 All four commands are fully portable and work from any project after installation.
+
+---
+
+## Security Guidelines for Contributors
+
+Skills run inside Claude Code sessions and can interact with a user's machine, credentials, and production systems. Read the general guidelines described in the main README and follow these specific principles when developing OSSM CI skills.
+
+**If a skill needs to run commands against external systems** (AWS, kubectl, APIs, etc.), it must target the OSSM sandbox container (to be created) rather than the user's local machine. The container provides an isolated environment with only the tools and secrets explicitly passed in by the user. Until the container is available, follow the guide-don't-execute pattern.
+
+> If a skill can cause harm without the user noticing, it should not exist. Avoid asking the AI to execute any command that can cause damage if misused, and if you have a strong use case for a skill that needs to execute commands, make sure to implement it in a way that the user is always in control of what is being executed and can review it before execution.
