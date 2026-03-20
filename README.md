@@ -6,6 +6,9 @@ Shared utilities to standardize and simplify build, test, and deployment pipelin
 
 - [Claude Code Plugin](#claude-code-plugin)
   - [Installation](#installation)
+    - [Step 1: Add the marketplace](#step-1-add-the-marketplace)
+    - [Step 2: Install the plugin](#step-2-install-the-plugin)
+    - [Step 3: Reload plugins](#step-3-reload-plugins)
   - [Commands](#commands)
 - [Repository Structure](#repository-structure)
   - [report\_portal/](#report_portal)
@@ -22,11 +25,36 @@ This repository is a **Claude Code skills marketplace**. Team members can instal
 
 ### Installation
 
-From any project directory with Claude Code:
+Plugins hosted on GitHub must be added as a marketplace first, then installed individually.
 
-```bash
-/plugin install ossm-ci@openshift-service-mesh/ci-utils
+#### Step 1: Add the marketplace
+
 ```
+/plugin marketplace add openshift-service-mesh/ci-utils
+```
+
+This registers the repo as a marketplace using the `name` field from its `.claude-plugin/marketplace.json`. The marketplace is registered as **`ci-utils`**.
+
+#### Step 2: Install the plugin
+
+```
+/plugin install ossm-ci@ci-utils
+```
+
+#### Step 3: Reload plugins
+
+```
+/reload-plugins
+```
+
+> **What does NOT work**
+>
+> | Command | Why it fails |
+> |---|---|
+> | `/plugin install ossm-ci@openshift-service-mesh/ci-utils` | The `org/repo` format is not a registered marketplace name |
+> | `/plugin install openshift-service-mesh/ci-utils` | Treated as a plugin name, not a marketplace |
+>
+> The target GitHub repo must contain `.claude-plugin/marketplace.json` with a `plugins` array listing available plugins.
 
 ### Commands
 
