@@ -76,9 +76,14 @@ cp <ci-utils>/plugins/ossm-ci/skills/generate-e2e-tests/documentation-e2e-genera
 ---
 
 #### `/ossm-ci:aws-scan`
-Inventories AWS resources across all regions and presents two clean tables: potentially dangling resources and a complete resource inventory. No analysis, no file generation — raw data only for the user to act on.
+Gives you the exact commands to download and run the audited inventory script yourself. The script outputs two tables directly in your terminal: potentially dangling resources and a complete inventory. Claude does not execute anything — you run the script, you see the results.
 
-**Requires:** AWS CLI configured with valid credentials.
+```bash
+curl -O https://raw.githubusercontent.com/openshift-service-mesh/ci-utils/main/scripts/aws-scan-audited.sh
+bash aws-scan-audited.sh
+```
+
+**Requires:** AWS CLI configured with valid credentials. See [`scripts/aws-scan-audited.sh`](scripts/aws-scan-audited.sh) for the full read-only script.
 
 ---
 
@@ -86,6 +91,43 @@ Inventories AWS resources across all regions and presents two clean tables: pote
 Collects and presents Prow CI execution data for OSSM repositories (istio, proxy, sail-operator, ztunnel). Shows summary statistics, median execution times by job type, infrastructure usage, failed/pending jobs, and exports a TSV file for Excel import. Fetches directly from the Prow API — works from any project.
 
 **Requires:** `python3` available in PATH.
+
+---
+
+## Security Guidelines for Skill Contributions
+
+Skills in this repository run inside Claude Code sessions, which means they can potentially execute commands on a user's machine and interact with their credentials, cloud accounts, and production systems. Contributors must follow these rules when adding or modifying skills.
+
+### What skills MUST NOT do
+
+- **Avoid executing cloud CLI commands directly** (AWS, GCP, Azure, kubectl, etc.). Claude is not a trusted executor — use an audited script that the user runs themselves. If you need to run any kind of command ensure that your user has restricted priviledges to avoid any potential damage and you do it following security best practices. For example, if you need to run AWS CLI commands, use an IAM user with read-only permissions and no access to sensitive resources, or if you need to run kubectl commands, use a kubeconfig with read-only permissions unless the skill is specifically designed for cluster administration and the user understands the risks.
+- **Access secrets, tokens, or credentials** beyond what is strictly needed to read public data. Avoid any skill that requires access to sensitive information unless it is designed with strict security controls and the user is fully aware of the implications.
+
+### What skills SHOULD do instead
+
+- **Use `allowedTools: []`** fill the allowed tools with the list of tools that the skill needs to run, and make sure to not include any tool that can cause harm if misused (e.g. AWS CLI, kubectl, oc, gcloud, az, etc.). This way you can ensure that the skill cannot execute any command that is not explicitly allowed.
+- **Keep audited scripts in `scripts/`**, version-controlled and reviewable, rather than generating them on the fly. 
+- **Be a reporter, not an actor.** The safest skills take data the user provides and format or analyze it — they do not reach out to external systems on their own. Only create skills that execute commands if there is a clear user need that cannot be met by a non-executing skill, and if you do,make sure that the user is the one pressing the button to run the command, not Claude automatically.
+- **If you are going to add steps that interact with external systems, add a big warning banner in the skill documentation** so future maintainers understand the risks and guidelines.
+
+### Executing commands against external systems
+
+If a skill genuinely needs to run commands against external tools (AWS CLI, kubectl, oc, APIs, etc.), the recommended approach is to **run the skill inside the OSSM sandbox container** (to be created) rather than on the user's local machine.
+
+The container will provide:
+- A controlled, isolated environment — no access to the user's local credentials or filesystem beyond what is explicitly mounted
+- Only the tools and binaries needed for the task (AWS CLI, kubectl, etc.)
+- Environment variables and secrets passed in explicitly by the user at run time, scoped to the session
+
+This means: **do not assume the user's local environment has the right tools or credentials.** Design skills that require external execution to target the container, and document clearly which tools and environment variables must be provided.
+
+> **This container does not exist yet.** Until it is available, skills that require external command execution must follow the guide-don't-execute pattern: output the commands, let the user run them.
+
+### The principle
+
+> If a skill can cause harm without the user noticing, it should not exist.
+
+When in doubt, ask: *could this skill delete something important or expose credentials if Claude misunderstood the task?* If yes, redesign it so the user is always the one pressing the button.
 
 ---
 
@@ -133,14 +175,12 @@ See [`skip_tests/README.md`](skip_tests/README.md) for full configuration refere
 
 ### `scripts/`
 
-Standalone scripts for AWS resource scanning and Prow CI data collection. These can be run directly from the command line and are independent of the Claude Code plugin (the plugin commands use AWS CLI and the Prow API directly without these scripts).
+Standalone scripts that can be run directly from the command line.
 
 | Script | Description |
 |--------|-------------|
-| `scripts/aws-dangling/scan_aws_resources.sh` | Scans all AWS regions for EC2, S3, RDS, ELB, and other resources. Generates a full report, CSV findings, and cleanup guidance. |
+| `scripts/aws-scan-audited.sh` | Read-only AWS inventory. Scans all regions for EC2, EBS, Elastic IPs, S3, RDS, and ELBs. Outputs two formatted tables directly to the terminal: potentially dangling resources and a complete inventory. No mutating commands anywhere in the file. |
 | `scripts/prow-metrics/collect_ossm_data.py` | Collects Prow CI job data for OSSM repositories and exports a TSV file for Excel import. |
-
-See the READMEs in each subdirectory for standalone usage.
 
 ---
 
