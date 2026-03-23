@@ -1,0 +1,102 @@
+# Dockerfile.local — OSSM AI sandbox for local use and kind clusters (Debian slim based)
+#
+# Minimal image (~77MB) for local development and kind clusters.
+# Uses debian:bookworm-slim instead of Alpine — Claude Code's binary requires glibc
+# which Alpine's musl cannot satisfy even with compat layers.
+#
+# Build:
+#   docker build -f images/Dockerfile.local -t ossm-ai-sandbox:local .
+#
+# Run locally:
+#   docker run --rm -it \
+#     -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY \
+#     -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
+#     -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
+#     -e AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION \
+#     -v $HOME/.kube:/home/claude/.kube:ro \
+#     ossm-ai-sandbox:local
+#
+# Run in kind (deploy as a Pod):
+#   kubectl run ossm-sandbox --image=ossm-ai-sandbox:local --rm -it \
+#     --env ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY \
+#     --restart=Never
+
+FROM debian:bookworm-slim
+
+# ── System tools ──────────────────────────────────────────────────────────────
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    bash \
+    curl \
+    unzip \
+    jq \
+    python3 \
+    python3-pip \
+    python3-requests \
+    python3-yaml \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# ── AWS CLI (multi-arch) ──────────────────────────────────────────────────────
+
+RUN ARCH=$(uname -m) \
+    && curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}.zip" -o /tmp/awscliv2.zip \
+    && unzip -q /tmp/awscliv2.zip -d /tmp \
+    && /tmp/aws/install \
+    && rm -rf /tmp/awscliv2.zip /tmp/aws
+
+# ── kubectl (multi-arch) ──────────────────────────────────────────────────────
+
+RUN ARCH=$(uname -m) \
+    && [ "$ARCH" = "aarch64" ] && ARCH="arm64" || ARCH="amd64" \
+    && KUBECTL_VERSION=$(curl -fsSL https://dl.k8s.io/release/stable.txt) \
+    && curl -fsSL "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl" -o /usr/local/bin/kubectl \
+    && chmod +x /usr/local/bin/kubectl
+
+# ── GitHub CLI ────────────────────────────────────────────────────────────────
+
+RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+      | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+      > /etc/apt/sources.list.d/github-cli.list \
+    && apt-get update && apt-get install -y --no-install-recommends gh \
+    && rm -rf /var/lib/apt/lists/*
+
+# ── Non-root user (UID 1000, GID 0) ──────────────────────────────────────────
+# GID 0 matches the OCP convention so the same image can work on kind and OCP.
+
+RUN useradd -m -u 1000 -g 0 -s /bin/bash claude
+
+# ── Copy ci-utils scripts and plugins ────────────────────────────────────────
+
+COPY --chown=claude:root scripts/ /opt/ci-utils/scripts/
+COPY --chown=claude:root plugins/ /opt/ci-utils/plugins/
+
+RUN find /opt/ci-utils/scripts -name "*.sh" -exec chmod +x {} \;
+
+# ── Workspace and Claude config directories ───────────────────────────────────
+
+RUN mkdir -p /home/claude/.claude /workspace \
+    && chown -R claude:root /home/claude /workspace \
+    && chmod -R g+rwx /home/claude /opt/ci-utils /workspace
+
+WORKDIR /workspace
+USER claude
+
+# ── Claude Code CLI ───────────────────────────────────────────────────────────
+
+RUN curl -fsSL https://claude.ai/install.sh | bash
+
+# ── Environment ───────────────────────────────────────────────────────────────
+
+ENV PATH="/home/claude/.local/bin:/opt/ci-utils/scripts:${PATH}"
+ENV CLAUDE_CONFIG_DIR="/home/claude/.claude"
+
+# Secrets must be injected at runtime — never baked into the image:
+#   ANTHROPIC_API_KEY
+#   AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION
+#   KUBECONFIG (mount as volume: -v $HOME/.kube:/home/claude/.kube:ro)
+#   GITHUB_TOKEN
+
+ENTRYPOINT ["claude"]
+CMD ["--help"]

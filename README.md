@@ -16,6 +16,7 @@ Shared utilities to standardize and simplify build, test, and deployment pipelin
   - [scripts/](#scripts)
   - [ai-helpers/](#ai-helpers)
   - [plugins/](#plugins)
+  - [images/](#images)
 
 ---
 
@@ -172,3 +173,15 @@ plugins/
             ├── SKILL.md                          # Full skill implementation
             └── documentation-e2e-generator.yaml  # Config template
 ```
+
+---
+
+### `images/`
+
+A container image providing a safe, isolated environment for running Claude Code skills that interact with external systems. Skills that need to execute commands against AWS, Kubernetes, or other tools should run inside this container rather than on the user's local machine.
+
+| Image | Base | Use case |
+|-------|------|----------|
+| `Dockerfile.local` | Debian Bookworm Slim | Local development, kind, and OpenShift clusters |
+
+See [`images/README.md`](images/README.md) for build and run instructions. Currently there is no CI automation to generate and publish this images, it can be built locally using the make target and you can push to `sail-dev` repository on [quay.io](https://quay.io/repository/sail-dev/ossm-ai-local?tab=tags) or your own registry.
