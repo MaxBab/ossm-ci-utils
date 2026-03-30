@@ -2,7 +2,7 @@ HUB            ?= quay.io/sail-dev
 TAG            ?= latest
 ARCH           ?= amd64
 PLATFORMS      ?= linux/amd64,linux/arm64
-CONTAINER_CLI  ?= docker
+CONTAINER_CLI  ?= podman
 BUILDER        ?= ossm-multiarch
 
 IMAGE = $(HUB)/ossm-ai-local:$(TAG)
