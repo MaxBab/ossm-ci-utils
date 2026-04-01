@@ -80,6 +80,12 @@ RUN mkdir -p /home/claude/.claude /workspace \
     && chown -R claude:root /home/claude /workspace \
     && chmod -R g+rwx /home/claude /opt/ci-utils /workspace
 
+# ── Claude permission settings (baked-in security constraints) ────────────────
+# Defines what Claude is allowed/denied to do when running non-interactively.
+# Read-only access to k8s/AWS/GitHub/ReportPortal; no destructive operations.
+
+COPY --chown=claude:root images/claude-settings.json /home/claude/.claude/settings.json
+
 WORKDIR /workspace
 USER claude
 

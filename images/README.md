@@ -185,6 +185,26 @@ This confirms that the container is running correctly and has access to the expe
 - **Minimal surface.** Only the tools explicitly needed for OSSM CI skills are installed.
 - **Read-only kubeconfig.** Mount kubeconfig as `:ro` — the container only needs to read cluster state.
 - **Scoped credentials.** Pass only the AWS keys needed for the task (prefer read-only IAM roles).
+- **Security constraints.** `images/claude-settings.json` is copied into the image at `/home/claude/.claude/settings.json`. It defines an explicit allow/deny list applied to every Claude invocation — including non-interactive `--print` mode used in CI. No interactive approval is possible in CI, so the settings file is the only gate.
+
+### Permission policy summary
+
+| Category | Allowed | Denied |
+|---|---|---|
+| **Shell utilities** | `ls`, `find`, `cat`, `grep`, `jq`, `curl`, `python3`, text-processing tools | `rm`, `rmdir`, `dd`, `shred`, `truncate` |
+| **Kubernetes** | `kubectl get/describe/logs/explain/version/api-*` (read-only) | `kubectl delete/apply/create/patch/edit/exec/rollout/scale/cordon/drain/taint/…` |
+| **AWS** | `describe-*` and `list-*` for EC2/ELB/RDS/IAM; `s3 ls`; `sts get-caller-identity` | All write/mutate operations: `create-*`, `delete-*`, `modify-*`, `terminate-*`, `s3 rm/cp/mv/sync`, `iam attach/detach` |
+| **GitHub CLI** | `gh pr/issue/repo/run view/list`, `gh api` (read) | Any write operations (create, comment, merge, push) |
+| **Web access** | `raw.githubusercontent.com`, `prow.ci.openshift.org`, `search.dptools.openshift.org`, `WebSearch` | All other domains (not in allow list) |
+| **ReportPortal MCP** | All `get_*` tools (read-only) | `launch_delete`, `launch_force_finish`, `update_defect_type`, `run_*` analysis |
+| **Container / package management** | — | `docker`, `podman`, `apt-get install`, `pip install`, `npm install`, `yarn add` |
+| **Privilege / remote** | — | `ssh`, `scp`, `rsync`, `chmod`, `chown`, `sudo`, `su` |
+| **Git** | — | `git push`, `git reset`, `git clean` |
+| **CI scripts** | `/opt/ci-utils/scripts/aws-dangling/scan_aws_resources.sh`, `/opt/ci-utils/scripts/prow-metrics/collect_ossm_data.py` | Any script not explicitly listed |
+
+The deny list takes precedence over the allow list. Any action not in either list is blocked by default in non-interactive (`--print`) mode.
+
+Note that the plugin commands themselves may perform actions using the allowed tools, but they are designed to be read-only and non-destructive. For example, the AWS scan command only calls `aws describe-*` and `aws list-*` operations. If you add a new skill or plugin, you must ensure it adheres to this policy and does not attempt to perform any denied actions, if there is a need to allow additional tools or commands, the settings file must be updated accordingly.
 
 ---
 
