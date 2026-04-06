@@ -9,6 +9,12 @@
       "source": "./plugins/ossm-ci",
       "description": "OSSM CI utilities: release confidence scoring, E2E test generation, AWS resource inventory, and Prow CI metrics",
       "version": "0.1.0"
+    },
+    {
+      "name": "code-reviewer",
+      "source": "./plugins/code-reviewer",
+      "description": "Multi-phase code review with auto-maintained project conventions",
+      "version": "0.3.0"
     }
   ]
 }
