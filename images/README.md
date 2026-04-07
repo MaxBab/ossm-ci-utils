@@ -116,7 +116,7 @@ podman run --rm -it \
   -e ANTHROPIC_VERTEX_PROJECT_ID=$ANTHROPIC_VERTEX_PROJECT_ID \
   -v ~/.config/gcloud:/home/claude/.config/gcloud:ro \
   -v $(pwd):/workspace \
-  quay.io/frherrer/ossm-ai-local --print "Tell me the context of this repository and the list of skills and claude commands available"
+  quay.io/sail-dev/ossm-ai-local:latest --print "Tell me the context of this repository and the list of skills and claude commands available"
 ```
 
 The output will be something like:
