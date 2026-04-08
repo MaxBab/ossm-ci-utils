@@ -17,7 +17,7 @@ Determine the PR context from the environment:
 ## Step 0: Setup — Ensure Reference Docs Exist
 
 Check if the project has reference docs:
-1. Check if `.claude/code-reviewer.local.md` exists
+1. Check if `.claude/code-reviewer/config.md` exists
 2. Check if `.claude/code-reviewer/reference/` directory exists with at least one `.md` file
 
 **If both exist:** Use them as-is. Proceed to Step 1.

@@ -17,7 +17,7 @@ Analyze the current git diff and produce structured review briefs that subagents
 ## Setup Guard
 
 Before doing any analysis, check that both exist:
-1. `.claude/code-reviewer.local.md` (project config)
+1. `.claude/code-reviewer/config.md` (project config)
 2. `.claude/code-reviewer/reference/` directory with at least one reference doc
 
 If either is missing, stop and tell the user:
@@ -27,7 +27,7 @@ If either is missing, stop and tell the user:
 
 ### Step 1: Capture the Diff
 
-1. Read `.claude/code-reviewer.local.md` to get `base_branch` (default: auto-detect `main` or `master`)
+1. Read `.claude/code-reviewer/config.md` to get `base_branch` (default: auto-detect `main` or `master`)
 2. Run `git diff {base_branch}...HEAD --stat` to get the file list and change summary
 3. Run `git diff {base_branch}...HEAD` to get the full diff
 4. Run `git log {base_branch}..HEAD --oneline` to get commit messages
@@ -35,7 +35,7 @@ If either is missing, stop and tell the user:
 
 ### Step 2: Load Context
 
-1. Read `.claude/code-reviewer.local.md` — parse YAML frontmatter for config, read markdown body for project context
+1. Read `.claude/code-reviewer/config.md` — parse YAML frontmatter for config, read markdown body for project context
 2. Read all reference docs from `.claude/code-reviewer/reference/`:
    - `style-guide.md`
    - `testing-practices.md`

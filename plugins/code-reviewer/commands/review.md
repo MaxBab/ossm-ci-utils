@@ -63,7 +63,7 @@ Check if a specific phase was requested:
 ## Step 1: Setup Guard
 
 Check that the project has been onboarded:
-1. Check if `.claude/code-reviewer.local.md` exists
+1. Check if `.claude/code-reviewer/config.md` exists
 2. Check if `.claude/code-reviewer/reference/` directory exists with at least one `.md` file
 
 If either is missing, stop and tell the user:
