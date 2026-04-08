@@ -118,17 +118,16 @@ If the engineer says to skip a doc entirely, don't create it.
 
 1. Create `.claude/code-reviewer/reference/` directory (if it doesn't exist)
 2. Write each confirmed reference doc
-3. Create or update `.claude/code-reviewer.local.md` config:
+3. Create or update `.claude/code-reviewer/config.md` config:
    - Auto-detect `base_branch` from git
    - Set `languages` based on what was discovered
    - Set `key_paths` based on discovered project structure
    - Markdown body: brief project context summary
-4. Check the target project's `.gitignore` for entries covering `.claude/*.local.md` and `.claude/code-reviewer/`. If missing, offer to add them:
-   > "The generated reference docs and config should not be committed. Should I add these entries to your `.gitignore`?"
-   > ```
-   > .claude/*.local.md
-   > .claude/code-reviewer/
-   > ```
+4. Ask the user whether to commit or gitignore the generated files:
+   > "Would you like to commit these files to the repo? Committing means `/code-reviewer:setup` only needs to be run once and all team members share the same conventions. Alternatively, I can add them to `.gitignore` so each developer maintains their own local copy."
+
+   - **If committing:** check `.gitignore` for any existing entries that would block the files (e.g. `.claude/` or `.claude/code-reviewer/`) and offer to remove them.
+   - **If gitignoring:** add `.claude/code-reviewer/` to `.gitignore` if not already present.
 5. Confirm to the user:
    > "Setup complete. Generated reference docs:"
    > - `.claude/code-reviewer/reference/style-guide.md`
