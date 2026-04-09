@@ -170,7 +170,7 @@ test_suites:
     skip_subsuites:
       - name: "pqc"
         reason: "This is a temporary change until we have ztunnel compiled with OpenSSL 3.5."
-        skip_in: ['midstream_sail']
+        skip_in: ['midstream_sail','midstream_helm']
         skip_branches_only: ['release-1.28']
     run_tests_only: []
   telemetry:
