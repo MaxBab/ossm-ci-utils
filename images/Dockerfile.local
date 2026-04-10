@@ -93,6 +93,9 @@ USER claude
 
 RUN curl -fsSL https://claude.ai/install.sh | bash
 
+# ── Initialize Claude config (prevents "config not found" warnings) ───────────
+RUN echo '{}' > /home/claude/.claude/.claude.json
+
 # ── Environment ───────────────────────────────────────────────────────────────
 
 ENV PATH="/home/claude/.local/bin:/opt/ci-utils/scripts:${PATH}"
