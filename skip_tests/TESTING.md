@@ -29,17 +29,9 @@ This uses a standalone test runner that doesn't require any external frameworks.
 - ✅ Filters tests by `downstream` stream
 - ✅ Correctly handles multiple streams in `skip_in` arrays
 
-### Branch Filtering
-- ✅ Excludes tests with `skip_branches_only` when no branch specified
-- ✅ Includes tests with matching `skip_branches_only` when branch matches
-- ✅ Excludes tests with non-matching `skip_branches_only` when branch doesn't match
-- ✅ Handles master branch filtering
-- ✅ Handles release branch filtering (release-1.24, release-1.28)
-
 ### Subsuite Handling
-- ✅ Filters subsuites correctly without branch
-- ✅ Filters subsuites correctly with branch
-- ✅ Respects `skip_branches_only` for subsuites
+- ✅ Filters subsuites correctly for midstream_sail
+- ✅ Filters subsuites correctly for midstream_helm
 
 ### Output Format
 - ✅ All required environment variables present
@@ -53,21 +45,18 @@ This uses a standalone test runner that doesn't require any external frameworks.
 
 ## Test Results
 
-Current status: ✅ **All 16 tests passing**
+Current status: ✅ **All 13 tests passing**
 
 ```
 ✓ test_invalid_stream_parameter
 ✓ test_accepts_midstream_sail
 ✓ test_accepts_midstream_helm
 ✓ test_accepts_downstream
-✓ test_filter_midstream_sail_no_branch
-✓ test_filter_midstream_helm_no_branch
-✓ test_filter_downstream_no_branch
-✓ test_filter_with_master_branch
-✓ test_filter_with_release_branch
-✓ test_filter_with_non_matching_branch
-✓ test_subsuite_filtering_no_branch
-✓ test_subsuite_filtering_with_branch
+✓ test_filter_midstream_sail
+✓ test_filter_midstream_helm
+✓ test_filter_downstream
+✓ test_subsuite_filtering_midstream_sail
+✓ test_subsuite_filtering_midstream_helm
 ✓ test_run_tests_only_filtering
 ✓ test_empty_suite
 ✓ test_output_format
