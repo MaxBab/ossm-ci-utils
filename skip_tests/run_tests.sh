@@ -33,24 +33,15 @@ test_suites:
         reason: "Test C for midstream_sail only"
         skip_in: ['midstream_sail']
       - name: "TestD"
-        reason: "Test D for midstream_sail on master only"
-        skip_in: ['midstream_sail']
-        skip_branches_only: ['master']
-      - name: "TestE"
-        reason: "Test E for midstream_helm on release-1.24 only"
-        skip_in: ['midstream_helm']
-        skip_branches_only: ['release-1.24']
-      - name: "TestF"
-        reason: "Test F for all environments"
+        reason: "Test D for all environments"
         skip_in: ['midstream_sail', 'midstream_helm', 'downstream']
     skip_subsuites:
       - name: "subsuite1"
         reason: "Subsuite 1 for midstream_sail"
         skip_in: ['midstream_sail']
       - name: "subsuite2"
-        reason: "Subsuite 2 for midstream_sail on release-1.28 only"
-        skip_in: ['midstream_sail']
-        skip_branches_only: ['release-1.28']
+        reason: "Subsuite 2 for midstream_helm"
+        skip_in: ['midstream_helm']
     run_tests_only:
       - name: "TestOnlyA"
         reason: "Run only this test in downstream"
@@ -128,75 +119,45 @@ function test_accepts_downstream() {
     assert_contains "$output" "SKIP_PARSER_SUITE='pilot'"
 }
 
-function test_filter_midstream_sail_no_branch() {
+function test_filter_midstream_sail() {
     local output
     output=$("$SCRIPT_PATH" "$TEST_CONFIG_FILE" pilot midstream_sail 2>&1)
     assert_contains "$output" "TestA" && \
     assert_contains "$output" "TestC" && \
-    assert_contains "$output" "TestF" && \
-    assert_not_contains "$output" "TestB" && \
-    assert_not_contains "$output" "TestD" && \
-    assert_not_contains "$output" "TestE"
+    assert_contains "$output" "TestD" && \
+    assert_not_contains "$output" "TestB"
 }
 
-function test_filter_midstream_helm_no_branch() {
+function test_filter_midstream_helm() {
     local output
     output=$("$SCRIPT_PATH" "$TEST_CONFIG_FILE" pilot midstream_helm 2>&1)
     assert_contains "$output" "TestA" && \
-    assert_contains "$output" "TestF" && \
+    assert_contains "$output" "TestD" && \
     assert_not_contains "$output" "TestB" && \
-    assert_not_contains "$output" "TestC" && \
-    assert_not_contains "$output" "TestD" && \
-    assert_not_contains "$output" "TestE"
+    assert_not_contains "$output" "TestC"
 }
 
-function test_filter_downstream_no_branch() {
+function test_filter_downstream() {
     local output
     output=$("$SCRIPT_PATH" "$TEST_CONFIG_FILE" pilot downstream 2>&1)
     assert_contains "$output" "TestB" && \
-    assert_contains "$output" "TestF" && \
+    assert_contains "$output" "TestD" && \
     assert_not_contains "$output" "TestA" && \
     assert_not_contains "$output" "TestC"
 }
 
-function test_filter_with_master_branch() {
-    local output
-    output=$("$SCRIPT_PATH" "$TEST_CONFIG_FILE" pilot midstream_sail master 2>&1)
-    assert_contains "$output" "TestA" && \
-    assert_contains "$output" "TestC" && \
-    assert_contains "$output" "TestD" && \
-    assert_contains "$output" "TestF"
-}
-
-function test_filter_with_release_branch() {
-    local output
-    output=$("$SCRIPT_PATH" "$TEST_CONFIG_FILE" pilot midstream_helm release-1.24 2>&1)
-    assert_contains "$output" "TestA" && \
-    assert_contains "$output" "TestE" && \
-    assert_contains "$output" "TestF"
-}
-
-function test_filter_with_non_matching_branch() {
-    local output
-    output=$("$SCRIPT_PATH" "$TEST_CONFIG_FILE" pilot midstream_sail release-1.30 2>&1)
-    assert_contains "$output" "TestA" && \
-    assert_contains "$output" "TestC" && \
-    assert_contains "$output" "TestF" && \
-    assert_not_contains "$output" "TestD"
-}
-
-function test_subsuite_filtering_no_branch() {
+function test_subsuite_filtering_midstream_sail() {
     local output
     output=$("$SCRIPT_PATH" "$TEST_CONFIG_FILE" pilot midstream_sail 2>&1)
     assert_contains "$output" "subsuite1" && \
     assert_not_contains "$output" "subsuite2"
 }
 
-function test_subsuite_filtering_with_branch() {
+function test_subsuite_filtering_midstream_helm() {
     local output
-    output=$("$SCRIPT_PATH" "$TEST_CONFIG_FILE" pilot midstream_sail release-1.28 2>&1)
-    assert_contains "$output" "subsuite1" && \
-    assert_contains "$output" "subsuite2"
+    output=$("$SCRIPT_PATH" "$TEST_CONFIG_FILE" pilot midstream_helm 2>&1)
+    assert_contains "$output" "subsuite2" && \
+    assert_not_contains "$output" "subsuite1"
 }
 
 function test_run_tests_only_filtering() {
@@ -237,14 +198,11 @@ run_test test_invalid_stream_parameter
 run_test test_accepts_midstream_sail
 run_test test_accepts_midstream_helm
 run_test test_accepts_downstream
-run_test test_filter_midstream_sail_no_branch
-run_test test_filter_midstream_helm_no_branch
-run_test test_filter_downstream_no_branch
-run_test test_filter_with_master_branch
-run_test test_filter_with_release_branch
-run_test test_filter_with_non_matching_branch
-run_test test_subsuite_filtering_no_branch
-run_test test_subsuite_filtering_with_branch
+run_test test_filter_midstream_sail
+run_test test_filter_midstream_helm
+run_test test_filter_downstream
+run_test test_subsuite_filtering_midstream_sail
+run_test test_subsuite_filtering_midstream_helm
 run_test test_run_tests_only_filtering
 run_test test_empty_suite
 run_test test_output_format

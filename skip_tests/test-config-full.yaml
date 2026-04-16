@@ -104,14 +104,6 @@ test_suites:
       - name: "TestAuthz_MultipleCustomProviders_Overlapping"
         reason: "The tests modify its configuration during the execution, which is not supported right now by Sail Operator install flow. (#74327)"
         skip_in: ['downstream','midstream_sail']
-      - name: "TestMultiTlsGateway_InvalidSecret"
-        reason: ""
-        skip_in: ['midstream_helm']
-        skip_branches_only: ['release-1.24']
-      - name: "TestMultiMtlsGateway_InvalidSecret"
-        reason: ""
-        skip_in: ['midstream_helm']
-        skip_branches_only: ['release-1.24']
     skip_subsuites:
       - name: "external_ca"
         reason: ""
@@ -171,7 +163,6 @@ test_suites:
       - name: "pqc"
         reason: "This is a temporary change until we have ztunnel compiled with OpenSSL 3.5."
         skip_in: ['midstream_sail','midstream_helm']
-        skip_branches_only: ['release-1.28']
     run_tests_only: []
   telemetry:
     skip_tests:
@@ -206,13 +197,5 @@ test_suites:
       - name: "TestAmbientStableRevisionLabelsGatewayStatus"
         reason: ""
         skip_in: ['midstream_helm']
-      - name: "TestDefaultInPlaceUpgradeFromPreviousMinorRelease"
-        reason: ""
-        skip_in: ['midstream_helm']
-        skip_branches_only: ['release-1.24']
-      - name: "TestCanaryUpgradeFromPreviousMinorRelease"
-        reason: ""
-        skip_in: ['midstream_helm']
-        skip_branches_only: ['release-1.24']
     skip_subsuites: []
     run_tests_only: []
