@@ -123,8 +123,8 @@ install_skill() {
         -e 's|\.claude/|.cursor/|g' \
         -e 's|`templates/review-brief\.md`|`.cursor/code-reviewer/templates/review-brief.md`|g' \
         -e 's|`templates/phase-report\.md`|`.cursor/code-reviewer/templates/phase-report.md`|g' \
-        -e 's|`/code-reviewer:review` or `/code-reviewer:review:\*`|`/code-reviewer:review` (or `/review`) or phase-specific review|' \
-        -e 's|`/code-reviewer:review:style` separately|`/code-reviewer:review:style` (or `/review:style`) separately|' \
+        -e 's|`/code-reviewer:review` or `/code-reviewer:review:\*`|`/code-reviewer:review` or phase-specific review|' \
+        -e 's|`/code-reviewer:review:style` separately|`/code-reviewer:review:style` separately|' \
         "$src" > "$dst"
 
     echo "  skills/${name}/SKILL.md  →  .cursor/code-reviewer/skills/${name}/"
@@ -139,7 +139,7 @@ done
 #
 # Transforms:
 #   - Frontmatter: Claude command metadata → Cursor rule metadata
-#   - Step 0: add /review short forms and natural-language triggers
+#   - Step 0: add natural-language triggers
 #   - Step 3: Agent tool dispatch → Task tool dispatch
 #   - Paths: .claude/ → .cursor/
 #   - Wording: "invoke skill" → "follow skill"
@@ -152,7 +152,7 @@ install_review_rule() {
     {
         cat <<'FRONTMATTER'
 ---
-description: "Activated when the user says /code-reviewer:review, /review, or asks to run the code review pipeline. Supports phase-specific variants: /code-reviewer:review:adversarial, /code-reviewer:review:style, /code-reviewer:review:testing (or short forms /review:adversarial, /review:style, /review:testing)."
+description: "Activated when the user says /code-reviewer:review or asks to run the code review pipeline. Supports phase-specific variants: /code-reviewer:review:adversarial, /code-reviewer:review:style, /code-reviewer:review:testing."
 globs:
 alwaysApply: false
 ---
@@ -173,10 +173,10 @@ FRONTMATTER
                 print
                 print ""
                 print "Check the user'\''s message for a specific phase request:"
-                print "- `/code-reviewer:review`, `/review`, or \"run code review\" — run all three phases"
-                print "- `/code-reviewer:review:adversarial`, `/review:adversarial`, or \"run adversarial review\" — run adversarial phase only"
-                print "- `/code-reviewer:review:style`, `/review:style`, or \"run style review\" — run style phase only"
-                print "- `/code-reviewer:review:testing`, `/review:testing`, or \"run testing review\" — run testing phase only"
+                print "- `/code-reviewer:review` or \"run code review\" — run all three phases"
+                print "- `/code-reviewer:review:adversarial` or \"run adversarial review\" — run adversarial phase only"
+                print "- `/code-reviewer:review:style` or \"run style review\" — run style phase only"
+                print "- `/code-reviewer:review:testing` or \"run testing review\" — run testing phase only"
                 state = "skip_step0"
                 next
             }
@@ -203,13 +203,13 @@ FRONTMATTER
                 print ""
                 print "For multiple review units, dispatch one style-reviewer and one testing-reviewer **per unit**, all in parallel alongside the single adversarial-reviewer."
                 print ""
-                print "**If `/code-reviewer:review:adversarial` (or `/review:adversarial`):**"
+                print "**If `/code-reviewer:review:adversarial`:**"
                 print "Dispatch only the adversarial-reviewer with the full-scope brief."
                 print ""
-                print "**If `/code-reviewer:review:style` (or `/review:style`):**"
+                print "**If `/code-reviewer:review:style`:**"
                 print "For each review unit, dispatch the style-reviewer with the unit-scoped brief."
                 print ""
-                print "**If `/code-reviewer:review:testing` (or `/review:testing`):**"
+                print "**If `/code-reviewer:review:testing`:**"
                 print "For each review unit, dispatch the testing-reviewer with the unit-scoped brief."
                 state = "skip_step3"
                 next
@@ -223,7 +223,7 @@ FRONTMATTER
         -e 's|\.claude/|.cursor/|g' \
         -e 's|Invoke the \([a-z-]*\) skill|Read and follow the \1 skill (`.cursor/code-reviewer/skills/\1/SKILL.md`)|g' \
         -e 's|invoke the \([a-z-]*\) skill|read and follow the \1 skill (`.cursor/code-reviewer/skills/\1/SKILL.md`)|g' \
-        -e 's|re-run `/code-reviewer:review` to verify|re-run `/code-reviewer:review` (or `/review`) to verify|' \
+        -e 's|re-run `/code-reviewer:review` to verify|re-run `/code-reviewer:review` to verify|' \
       > "$dst"
 
     echo "  commands/review.md  →  .cursor/rules/code-reviewer-review.mdc"
@@ -238,7 +238,6 @@ install_review_rule
 #   - Frontmatter: Claude command metadata → Cursor rule metadata
 #   - Discovery: add .cursor/rules/ to scanned locations
 #   - Paths: .claude/ → .cursor/
-#   - Commands: add /review short form mentions
 # ============================================================
 
 install_setup_rule() {
@@ -248,7 +247,7 @@ install_setup_rule() {
     {
         cat <<'FRONTMATTER'
 ---
-description: "Activated when the user says /code-reviewer:setup, /review-setup, or asks to onboard a project for code review"
+description: "Activated when the user says /code-reviewer:setup or asks to onboard a project for code review"
 globs:
 alwaysApply: false
 ---
@@ -269,7 +268,7 @@ FRONTMATTER
         ' "$src"
     } | sed \
         -e 's|\.claude/|.cursor/|g' \
-        -e 's|run `/code-reviewer:review` to review|run `/code-reviewer:review` (or `/review`) to review|' \
+        -e 's|run `/code-reviewer:review` to review|run `/code-reviewer:review` to review|' \
       > "$dst"
 
     echo "  commands/setup.md  →  .cursor/rules/code-reviewer-setup.mdc"
@@ -295,5 +294,5 @@ echo "    templates/                 (review-brief, phase-report)"
 echo ""
 echo "Next steps:"
 echo "  1. Open the project in Cursor"
-echo "  2. Run /code-reviewer:setup (or /review-setup) to onboard your project"
-echo "  3. Run /code-reviewer:review (or /review) to review your changes"
+echo "  2. Run /code-reviewer:setup to onboard your project"
+echo "  3. Run /code-reviewer:review to review your changes"
