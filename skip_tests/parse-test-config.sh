@@ -13,15 +13,19 @@ if [ -z "$CONFIG_FILE" ] || [ -z "$SKIP_PARSER_SUITE" ] || [ -z "$STREAM" ]; the
     echo "Usage: $0 <config_file> <suite> <stream>" >&2
     echo "  config_file: path to YAML config" >&2
     echo "  suite: pilot, ambient, telemetry, security, or helm" >&2
-    echo "  stream: midstream_sail, midstream_helm, or downstream - returns only tests with this value in skip_in" >&2
+    echo "  stream: midstream_sail, midstream_helm, downstream, multicluster, or multicluster_ambient" >&2
+    echo "          returns only tests with this value in skip_in" >&2
     exit 1
 fi
 
 # Validate stream parameter
-if [ "$STREAM" != "midstream_sail" ] && [ "$STREAM" != "midstream_helm" ] && [ "$STREAM" != "downstream" ]; then
-    echo "Error: stream must be 'midstream_sail', 'midstream_helm', or 'downstream', got: '$STREAM'" >&2
-    exit 1
-fi
+case "$STREAM" in
+    midstream_sail|midstream_helm|downstream|multicluster|multicluster_ambient) ;;
+    *)
+        echo "Error: stream must be 'midstream_sail', 'midstream_helm', 'downstream', 'multicluster', or 'multicluster_ambient', got: '$STREAM'" >&2
+        exit 1
+        ;;
+esac
 
 if [ ! -f "$CONFIG_FILE" ]; then
     echo "Error: Config file '$CONFIG_FILE' not found"
@@ -63,5 +67,9 @@ echo "SKIP_PARSER_SUITE='$SKIP_PARSER_SUITE'"
 #   eval $(./parse-test-config.sh test-config-full.yaml security midstream_helm)
 # Downstream:
 #   eval $(./parse-test-config.sh test-config-full.yaml security downstream)
+# Multicluster (sidecar):
+#   eval $(./parse-test-config.sh test-config-full.yaml security multicluster)
+# Multicluster (ambient):
+#   eval $(./parse-test-config.sh test-config-full.yaml security multicluster_ambient)
 # Then run:
 #   integ-suite-ocp.sh "$SKIP_PARSER_SUITE" "$SKIP_PARSER_SKIP_TESTS" "$SKIP_PARSER_SKIP_SUBSUITES" "$SKIP_PARSER_RUN_TESTS_ONLY"

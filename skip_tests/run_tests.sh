@@ -34,7 +34,16 @@ test_suites:
         skip_in: ['midstream_sail']
       - name: "TestD"
         reason: "Test D for all environments"
-        skip_in: ['midstream_sail', 'midstream_helm', 'downstream']
+        skip_in: ['midstream_sail', 'midstream_helm', 'downstream', 'multicluster', 'multicluster_ambient']
+      - name: "TestE"
+        reason: "Test E for multicluster sidecar only"
+        skip_in: ['multicluster']
+      - name: "TestF"
+        reason: "Test F for multicluster ambient only"
+        skip_in: ['multicluster_ambient']
+      - name: "TestG"
+        reason: "Test G for both multicluster modes"
+        skip_in: ['multicluster', 'multicluster_ambient']
     skip_subsuites:
       - name: "subsuite1"
         reason: "Subsuite 1 for midstream_sail"
@@ -187,6 +196,48 @@ function test_eval_compatibility() {
     [[ "$SKIP_PARSER_SUITE" == "pilot" ]] && [[ -n "$SKIP_PARSER_SKIP_TESTS" ]]
 }
 
+function test_accepts_multicluster() {
+    local output
+    output=$("$SCRIPT_PATH" "$TEST_CONFIG_FILE" pilot multicluster 2>&1)
+    assert_contains "$output" "SKIP_PARSER_SUITE='pilot'"
+}
+
+function test_accepts_multicluster_ambient() {
+    local output
+    output=$("$SCRIPT_PATH" "$TEST_CONFIG_FILE" pilot multicluster_ambient 2>&1)
+    assert_contains "$output" "SKIP_PARSER_SUITE='pilot'"
+}
+
+function test_filter_multicluster() {
+    local output
+    output=$("$SCRIPT_PATH" "$TEST_CONFIG_FILE" pilot multicluster 2>&1)
+    assert_contains "$output" "TestD" && \
+    assert_contains "$output" "TestE" && \
+    assert_contains "$output" "TestG" && \
+    assert_not_contains "$output" "TestA" && \
+    assert_not_contains "$output" "TestB" && \
+    assert_not_contains "$output" "TestC" && \
+    assert_not_contains "$output" "TestF"
+}
+
+function test_filter_multicluster_ambient() {
+    local output
+    output=$("$SCRIPT_PATH" "$TEST_CONFIG_FILE" pilot multicluster_ambient 2>&1)
+    assert_contains "$output" "TestD" && \
+    assert_contains "$output" "TestF" && \
+    assert_contains "$output" "TestG" && \
+    assert_not_contains "$output" "TestA" && \
+    assert_not_contains "$output" "TestB" && \
+    assert_not_contains "$output" "TestC" && \
+    assert_not_contains "$output" "TestE"
+}
+
+function test_multicluster_run_tests_only_empty() {
+    local output
+    output=$("$SCRIPT_PATH" "$TEST_CONFIG_FILE" pilot multicluster 2>&1)
+    assert_contains "$output" "SKIP_PARSER_RUN_TESTS_ONLY=''"
+}
+
 # Main execution
 echo -e "${YELLOW}Running parse-test-config.sh tests...${NC}"
 echo ""
@@ -207,6 +258,11 @@ run_test test_run_tests_only_filtering
 run_test test_empty_suite
 run_test test_output_format
 run_test test_eval_compatibility
+run_test test_accepts_multicluster
+run_test test_accepts_multicluster_ambient
+run_test test_filter_multicluster
+run_test test_filter_multicluster_ambient
+run_test test_multicluster_run_tests_only_empty
 
 cleanup
 

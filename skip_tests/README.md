@@ -65,16 +65,18 @@ test_suites:
 
 ### The `skip_in` Field (Required)
 
-The `skip_in` field is **required** for all test entries and specifies where a test should be skipped or run. This enables different test configurations for midstream_sail, midstream_helm, and downstream environments.
+The `skip_in` field is **required** for all test entries and specifies where a test should be skipped or run. This enables different test configurations for different environments.
 
 **Values:**
 - `['midstream_sail']` - Skip/run only in midstream_sail testing
 - `['midstream_helm']` - Skip/run only in midstream_helm testing
 - `['downstream']` - Skip/run only in downstream testing
+- `['multicluster']` - Skip/run only in multicluster testing
+- `['multicluster_ambient']` - Skip/run only in multicluster_ambient testing
 - `['midstream_sail', 'midstream_helm']` - Skip/run in both midstream environments
 - `['midstream_sail', 'downstream']` - Skip/run in midstream_sail and downstream
 - `['midstream_helm', 'downstream']` - Skip/run in midstream_helm and downstream
-- `['midstream_sail', 'midstream_helm', 'downstream']` - Skip/run in all environments
+- `['midstream_sail', 'midstream_helm', 'downstream', 'multicluster', 'multicluster_ambient']` - Skip/run in all environments
 
 **Examples:**
 
@@ -104,6 +106,16 @@ skip_tests:
   - name: "TestBroken"
     reason: "Known issue across all environments"
     skip_in: ['midstream_sail', 'midstream_helm', 'downstream']
+
+  # Skip only in sidecar multicluster
+  - name: "TestSidecarMulticlusterIncompat"
+    reason: "Does not work in sidecar multicluster topology"
+    skip_in: ['multicluster']
+
+  # Skip in both multicluster modes
+  - name: "TestMulticlusterIncompat"
+    reason: "Does not work in any multicluster topology"
+    skip_in: ['multicluster', 'multicluster_ambient']
 ```
 
 ## Usage
@@ -131,7 +143,7 @@ See section about [Parsing Configuration script](#parsing-configuration-script) 
 **Parameters:**
 - `config_file` - Path to YAML configuration file (e.g., `prow/skip_tests/skip_tests_full.yaml` in openshift-service-mesh/istio repo)
 - `suite` - Test suite name (pilot, security, ambient, telemetry, or helm)
-- `stream` - **Required**. Filter tests by stream: `midstream_sail`, `midstream_helm`, or `downstream`
+- `stream` - **Required**. Filter tests by stream: `midstream_sail`, `midstream_helm`, `downstream`, `multicluster`, or `multicluster_ambient`
 
 **Examples:**
 
@@ -144,6 +156,12 @@ See section about [Parsing Configuration script](#parsing-configuration-script) 
 
 # Parse smoke tests for pilot in downstream
 ./parse-test-config.sh prow/skip_tests/skip_tests_smoke.yaml pilot downstream
+
+# Parse full tests for pilot in sidecar multicluster
+./parse-test-config.sh prow/skip_tests/skip_tests_full.yaml pilot multicluster
+
+# Parse full tests for pilot in ambient multicluster
+./parse-test-config.sh prow/skip_tests/skip_tests_full.yaml pilot multicluster_ambient
 ```
 
 **Output:**
@@ -175,6 +193,14 @@ integ-suite-ocp.sh "$SKIP_PARSER_SUITE" "$SKIP_PARSER_SKIP_TESTS" "$SKIP_PARSER_
 # Parse and execute for downstream (smoke tests)
 eval $(./parse-test-config.sh prow/skip_tests/skip_tests_smoke.yaml security downstream)
 integ-suite-ocp.sh "$SKIP_PARSER_SUITE" "$SKIP_PARSER_SKIP_TESTS" "$SKIP_PARSER_SKIP_SUBSUITES" "$SKIP_PARSER_RUN_TESTS_ONLY"
+
+# Parse and execute for sidecar multicluster
+eval $(./parse-test-config.sh prow/skip_tests/skip_tests_full.yaml security multicluster)
+integ-suite-ocp.sh "$SKIP_PARSER_SUITE" "$SKIP_PARSER_SKIP_TESTS" "$SKIP_PARSER_SKIP_SUBSUITES" "$SKIP_PARSER_RUN_TESTS_ONLY"
+
+# Parse and execute for ambient multicluster
+eval $(./parse-test-config.sh prow/skip_tests/skip_tests_full.yaml security multicluster_ambient)
+integ-suite-ocp.sh "$SKIP_PARSER_SUITE" "$SKIP_PARSER_SKIP_TESTS" "$SKIP_PARSER_SKIP_SUBSUITES" "$SKIP_PARSER_RUN_TESTS_ONLY"
 ```
 
 ### Stream Filtering Behavior
@@ -197,9 +223,15 @@ security:
       skip_in: ['midstream_sail', 'downstream']
     - name: "TestF"
       skip_in: ['midstream_sail', 'midstream_helm', 'downstream']
+    - name: "TestG"
+      skip_in: ['multicluster']
+    - name: "TestH"
+      skip_in: ['multicluster_ambient']
 ```
 
 **Filter Results:**
 - `midstream_sail` parameter returns: `TestA|TestD|TestE|TestF`
 - `midstream_helm` parameter returns: `TestB|TestD|TestF`
 - `downstream` parameter returns: `TestC|TestE|TestF`
+- `multicluster` parameter returns: `TestG`
+- `multicluster_ambient` parameter returns: `TestH`
